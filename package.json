@@ -1,0 +1,10 @@
+{
+  "name": "roubar-clicker",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Clique na cara do Roubar e construa a República do Roubar.",
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "start": "python3 -m http.server 8080"
+  }
+}

@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Roubar Clicker</title>
+  <meta name="description" content="Clique na cara do Roubar, junte dinheiro e construa a República do Roubar.">
+  <meta name="theme-color" content="#0c3b3e">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <link rel="apple-touch-icon" href="assets/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500..900;1,6..96,500..900&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <h1>Roubar Clicker</h1>
+      <button type="button" id="empire-name" class="empire" title="Mudar o nome do império">
+        <span id="empire-name-text">República do Roubar</span>
+        <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M11.3 1.7l3 3L5 14H2v-3z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+    <nav class="menu" aria-label="Menu do jogo">
+      <button type="button" data-open="dlg-achievements"><span class="menu-icon" aria-hidden="true">🏅</span><span>Conquistas</span></button>
+      <button type="button" data-open="dlg-stats"><span class="menu-icon" aria-hidden="true">📊</span><span>Estatísticas</span></button>
+      <button type="button" data-open="dlg-prestige" id="btn-prestige"><span class="menu-icon" aria-hidden="true">🔥</span><span>Renascer</span><span class="badge" id="prestige-badge" hidden></span></button>
+      <button type="button" data-open="dlg-options"><span class="menu-icon" aria-hidden="true">⚙️</span><span>Opções</span></button>
+    </nav>
+    <button type="button" id="btn-sound" class="sound" aria-pressed="true" aria-label="Som ligado">🔊</button>
+  </header>
+
+  <button type="button" class="ticker" id="ticker" title="Próxima notícia">
+    <span class="ticker-label">Diário Oficial</span>
+    <span class="ticker-text" id="ticker-text"></span>
+  </button>
+
+  <main>
+    <section class="counter" aria-label="Seu dinheiro">
+      <p class="money" id="money">R$ 0</p>
+      <p class="cps" id="cps">R$ 0 por segundo</p>
+      <div class="buffs" id="buffs"></div>
+    </section>
+
+    <section class="stage" id="stage" aria-label="Moeda do Roubar">
+      <div class="rosette" id="rosette" aria-hidden="true"></div>
+      <button type="button" class="coin" id="coin" aria-label="Clicar no Roubar"></button>
+      <p class="click-value" id="click-value">R$ 1 por clique</p>
+      <p class="serial">Cliques <span id="serial">0000000</span></p>
+    </section>
+
+    <section class="store" aria-label="Loja">
+      <div class="store-block">
+        <h2>Melhorias</h2>
+        <div class="upgrades" id="upgrades"></div>
+        <p class="hint" id="upgrades-empty">As melhorias aparecem aqui conforme você compra construções e clica.</p>
+      </div>
+
+      <div class="store-block">
+        <div class="store-head">
+          <h2>Construções</h2>
+          <div class="amount" role="group" aria-label="Quantidade por compra">
+            <button type="button" data-amount="1" aria-pressed="true">x1</button>
+            <button type="button" data-amount="10" aria-pressed="false">x10</button>
+            <button type="button" data-amount="100" aria-pressed="false">x100</button>
+          </div>
+        </div>
+        <ul class="buildings" id="buildings"></ul>
+      </div>
+    </section>
+  </main>
+
+  <div id="fx" class="fx" aria-hidden="true"></div>
+  <div id="toasts" class="toasts" role="status" aria-live="polite"></div>
+
+  <dialog id="dlg-achievements" class="sheet" aria-labelledby="t-ach">
+    <header><h2 id="t-ach">Conquistas</h2><button type="button" class="close" data-close aria-label="Fechar">×</button></header>
+    <div class="sheet-body">
+      <p class="lede" id="ach-summary"></p>
+      <ul class="medals" id="ach-list"></ul>
+    </div>
+  </dialog>
+
+  <dialog id="dlg-stats" class="sheet" aria-labelledby="t-stats">
+    <header><h2 id="t-stats">Estatísticas</h2><button type="button" class="close" data-close aria-label="Fechar">×</button></header>
+    <div class="sheet-body"><dl class="stats" id="stats-body"></dl></div>
+  </dialog>
+
+  <dialog id="dlg-prestige" class="sheet" aria-labelledby="t-prestige">
+    <header><h2 id="t-prestige">Renascer</h2><button type="button" class="close" data-close aria-label="Fechar">×</button></header>
+    <div class="sheet-body">
+      <p>Renascer zera seu dinheiro, suas construções e suas melhorias. Em troca, você recebe Roubars de Ouro, e cada um aumenta toda a produção em 2% para sempre. Conquistas e estatísticas ficam.</p>
+      <dl class="stats" id="prestige-body"></dl>
+      <div class="meter" aria-hidden="true"><div id="prestige-meter"></div></div>
+      <p class="hint" id="prestige-hint"></p>
+      <button type="button" class="primary" id="btn-ascend">Renascer</button>
+    </div>
+  </dialog>
+
+  <dialog id="dlg-options" class="sheet" aria-labelledby="t-options">
+    <header><h2 id="t-options">Opções</h2><button type="button" class="close" data-close aria-label="Fechar">×</button></header>
+    <div class="sheet-body">
+      <p class="warn" id="storage-warning" hidden>Este navegador bloqueou o salvamento automático. Copie o código abaixo para não perder o progresso.</p>
+      <label class="check"><input type="checkbox" id="opt-sound"> Efeitos sonoros</label>
+      <label class="check"><input type="checkbox" id="opt-fx"> Números flutuantes ao clicar</label>
+
+      <h3>Salvar</h3>
+      <p class="hint">O jogo salva sozinho a cada 30 segundos neste aparelho.</p>
+      <button type="button" id="btn-save">Salvar agora</button>
+
+      <h3>Levar o progresso para outro aparelho</h3>
+      <label for="save-code" class="hint">Código do seu progresso</label>
+      <textarea id="save-code" rows="4" spellcheck="false" autocomplete="off"></textarea>
+      <div class="row">
+        <button type="button" id="btn-export">Gerar e copiar código</button>
+        <button type="button" id="btn-import">Carregar este código</button>
+      </div>
+      <p class="warn" id="import-error" hidden>Código inválido. Copie o código inteiro e tente de novo.</p>
+
+      <h3>Recomeçar do zero</h3>
+      <p class="hint">Apaga tudo, inclusive conquistas e Roubars de Ouro. Não dá para desfazer.</p>
+      <button type="button" class="danger" id="btn-wipe">Apagar todo o progresso</button>
+    </div>
+  </dialog>
+
+  <dialog id="dlg-offline" class="sheet small" aria-labelledby="t-offline">
+    <header><h2 id="t-offline">Enquanto você estava fora</h2></header>
+    <div class="sheet-body">
+      <p id="offline-text"></p>
+      <p class="big" id="offline-gain"></p>
+      <button type="button" class="primary" data-close>Receber</button>
+    </div>
+  </dialog>
+
+  <dialog id="dlg-name" class="sheet small" aria-labelledby="t-name">
+    <header><h2 id="t-name">Nome do império</h2><button type="button" class="close" data-close aria-label="Fechar">×</button></header>
+    <form class="sheet-body" id="name-form" method="dialog">
+      <label for="name-input" class="hint">Como o seu império vai se chamar?</label>
+      <input type="text" id="name-input" maxlength="32" autocomplete="off" required>
+      <button type="submit" class="primary">Salvar nome</button>
+    </form>
+  </dialog>
+
+  <script src="js/data.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
