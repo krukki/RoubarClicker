@@ -11,6 +11,10 @@ o progresso sozinho.
   para ganhar dinheiro sem clicar.
 - Compre melhorias para dobrar a produção.
 - Clique no Roubar Dourado quando ele aparecer: ele dá um bônus temporário.
+- Embaixo da moeda fica a cidade: cada construção comprada aparece lá, os
+  Clones andam pela rua com o rosto do Roubar e o céu muda com a hora do dia.
+  Toque numa construção para ver quanto ela rende. Fique de olho: às vezes o
+  Roubar Dourado se esconde entre os prédios.
 - Quando juntar R$ 1 bilhão no total, você pode renascer: recomeça do zero,
   mas com um bônus permanente de produção.
 
@@ -52,6 +56,8 @@ Para trocar uma piada, edite só esse arquivo.
 | `js/data.js` | Construções, melhorias, conquistas e notícias |
 | `js/game.js` | Regras: custos, produção, salvar, renascer |
 | `js/ui.js` | Tela, animações e sons |
+| `js/town-art.js` | Desenhos da cidade (SVG) |
+| `js/town.js` | A cidade: construções, clones, dia e noite |
 | `js/main.js` | Liga tudo e cuida do salvamento |
 | `sw.js`, `manifest.webmanifest` | Instalação e modo sem internet |
 | `tests/` | Testes automáticos das regras (`npm test`) |

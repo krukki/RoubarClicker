@@ -277,6 +277,7 @@
   ach('deixou-passar', 'Deixou passar', 'Deixe um Roubar Dourado ir embora.', '💨', { type: 'special' }, true);
   ach('bom-filho', 'Bom filho à casa torna', 'Volte depois de 8 horas fora.', '🏠', { type: 'special' }, true);
   ach('trinca', 'Trinca', 'Receba os três bônus do Roubar Dourado.', '🎰', { type: 'special' }, true);
+  ach('escondido', 'Esconde-esconde', 'Ache um Roubar Dourado escondido na cidade.', '🙈', { type: 'special' }, true);
 
   /* ---------- Notícias ---------- */
   // req (opcional): mesma forma das condições acima.
@@ -313,6 +314,8 @@
     { text: 'Fisioterapeutas alertam para surto de dedo cansado na população.', req: { type: 'clicks', n: 1000 } },
     { text: 'Produção nacional passa de R$ 1.000 por segundo. Ninguém mais lembra como era trabalhar.', req: { type: 'cps', n: 1000 } },
     { text: 'Museu Nacional inaugura ala de conquistas. A fila dá a volta no quarteirão.', req: { type: 'achievements', n: 10 } },
+    { text: 'Clones do Roubar são vistos passeando pela cidade. Ninguém sabe para onde eles vão.', req: { type: 'building', building: 'clone', n: 3 } },
+    { text: 'Moradores relatam um rosto dourado espiando entre os prédios. A prefeitura pede calma.', req: { type: 'golden', n: 3 } },
   ];
 
   /* ---------- Efeitos do Roubar Dourado ---------- */

@@ -2,16 +2,19 @@
  * Faz o jogo abrir sem internet. Sempre tenta a rede primeiro (para pegar
  * atualizações) e usa a cópia guardada só quando a rede falha.
  */
-const CACHE = 'roubar-clicker-v1';
+const CACHE = 'roubar-clicker-v2';
 const FILES = [
   './',
   'index.html',
   'css/style.css',
   'js/data.js',
   'js/game.js',
+  'js/town-art.js',
+  'js/town.js',
   'js/ui.js',
   'js/main.js',
   'assets/roubar.webp',
+  'assets/roubar-face.webp',
   'assets/favicon.png',
   'assets/icon-192.png',
   'assets/icon-512.png',

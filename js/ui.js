@@ -104,6 +104,7 @@
       $('rosette').innerHTML = rosetteSVG();
 
       this.buildStore();
+      RC.Town.init(game);
       this.bindCoin();
       this.bindStore();
       this.bindDialogs();
@@ -140,6 +141,7 @@
       this.renderUpgrades();
       this.renderStore();
       this.renderPrestigeBadge();
+      RC.Town.render();
       if ($('dlg-stats').open) this.renderStats();
       if ($('dlg-prestige').open) this.renderPrestige();
     },
@@ -276,6 +278,7 @@
       if (g.buy(id, g.s.settings.buyAmount)) {
         Sound.buy();
         this.pulse(this.rows[id].count);
+        RC.Town.onBuy(id);
       } else {
         Sound.deny();
       }
@@ -352,22 +355,30 @@
       btn.type = 'button';
       btn.setAttribute('aria-label', 'Roubar Dourado. Clique para ganhar um bônus.');
       btn.innerHTML = coinSVG('gold');
-      const size = 104;
-      const top = 130;
-      const bottom = 90;
-      btn.style.left = Math.round(12 + spawn.x * Math.max(0, window.innerWidth - size - 24)) + 'px';
-      btn.style.top = Math.round(top + spawn.y * Math.max(0, window.innerHeight - size - top - bottom)) + 'px';
+      // Às vezes ele aparece escondido entre os prédios da cidade.
+      const hidden = RC.Town.shouldHideGolden();
       btn.addEventListener('click', () => {
         const box = btn.getBoundingClientRect();
         const result = this.game.clickGolden();
         this.hideGolden();
         if (!result) return;
+        if (hidden) this.game.grant('escondido');
         Sound.golden();
         this.toast(result.name, result.text, '🌟', 'gold');
         this.floatText(box.left + box.width / 2, box.top, result.name + '!', 'gold');
         this.dirty = true;
       });
-      document.body.appendChild(btn);
+      if (hidden) {
+        btn.setAttribute('aria-label', 'Roubar Dourado escondido na cidade. Clique para ganhar um bônus.');
+        RC.Town.adoptGolden(btn);
+      } else {
+        const size = 104;
+        const top = 130;
+        const bottom = 90;
+        btn.style.left = Math.round(12 + spawn.x * Math.max(0, window.innerWidth - size - 24)) + 'px';
+        btn.style.top = Math.round(top + spawn.y * Math.max(0, window.innerHeight - size - top - bottom)) + 'px';
+        document.body.appendChild(btn);
+      }
       this.goldenNode = btn;
     },
 
@@ -626,6 +637,7 @@
       this.hideGolden();
       this.upgradeSig = null;
       this.syncSettings();
+      RC.Town.render(true);
       this.dirty = true;
     },
 
