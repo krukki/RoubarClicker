@@ -8,14 +8,16 @@
   const RC = (root.RC = root.RC || {});
 
   /* ---------- Construções ---------- */
-  // upgrades: nomes das 5 melhorias (ao ter 1, 10, 25, 50 e 100 unidades).
+  // upgrades: nomes das melhorias (ao ter 1, 10, 25, 50, 100, 150 e 200 unidades).
+  // looks: o que cada melhoria muda na cidade.
   // feat: nome da conquista por ter 50 unidades.
   const BUILDINGS = [
     {
       id: 'dedo', name: 'Dedo Nervoso', plural: 'Dedos Nervosos', icon: '👆',
       baseCost: 15, baseCps: 0.1,
       desc: 'Clica na cara do Roubar sem pedir licença.',
-      upgrades: ['Unha cortada', 'Dedo indicador reserva', 'Calo profissional', 'Dedo biônico', 'Mão inteira'],
+      upgrades: ['Unha cortada', 'Dedo indicador reserva', 'Calo profissional', 'Dedo biônico', 'Mão inteira', 'Anel de formatura', 'Dedo de diamante'],
+      looks: ['as unhas dos dedos ficam douradas e brilham.', 'cada pedestal ganha um segundo dedo apertando junto.', 'os dedos ganham curativo e o pedestal vira tijolo.', 'os dedos viram metal com rebites e apertam mais rápido.', 'aparece a mão inteira em cima do dedo e o botão vira ouro.', 'cada dedo ganha um anel com pedra vermelha.', 'os dedos viram cristal e soltam brilhos.'],
       feat: 'Mão cheia',
     },
     {
@@ -23,6 +25,7 @@
       baseCost: 100, baseCps: 1,
       desc: 'Idêntico ao original. Ninguém sabe mais qual é qual.',
       upgrades: ['Crachá de identificação', 'Clone com café', 'Clone que acorda cedo', 'Clone do clone', 'Sindicato dos clones'],
+      looks: ['os clones andam com crachá no peito.', 'os clones carregam um copinho de café fumegante.', 'os clones usam boné vermelho e andam mais rápido.', 'cada clone anda com um miniclone atrás.', 'os clones marcham com plaquinhas de protesto.'],
       feat: 'Crise de identidade',
     },
     {
@@ -30,6 +33,7 @@
       baseCost: 1100, baseCps: 8,
       desc: 'Roubars plantados, regados e colhidos na safra.',
       upgrades: ['Adubo de primeira', 'Espantalho de Roubar', 'Irrigação automática', 'Safra recorde', 'Roubar transgênico'],
+      looks: ['a plantação cresce mais alta e mais cheia.', 'cada fazenda ganha um espantalho com a cara dele.', 'um irrigador molha a plantação.', 'o celeiro fica vermelho e aparecem fardos de feno.', 'nascem girassóis gigantes com o rosto do Roubar.'],
       feat: 'Agro é Roubar',
     },
     {
@@ -37,6 +41,7 @@
       baseCost: 12000, baseCps: 47,
       desc: 'Linha de montagem em três turnos.',
       upgrades: ['Esteira mais rápida', 'Controle de qualidade', 'Turno da madrugada', 'Robôs na linha', 'Fábrica que fabrica fábricas'],
+      looks: ['uma esteira com caixas passa na frente da fábrica.', 'a fábrica ganha o selo verde de qualidade.', 'as janelas ficam acesas o tempo todo e o prédio vira tijolo.', 'um braço robótico trabalha no telhado.', 'surge uma segunda chaminé soltando fumaça dourada.'],
       feat: 'Revolução industrial',
     },
     {
@@ -44,6 +49,7 @@
       baseCost: 130000, baseCps: 260,
       desc: 'Forma Roubars com diploma e tudo.',
       upgrades: ['Merenda reforçada', 'Aula de reforço', 'Professor substituto', 'Formatura antecipada', 'Doutorado em Roubar'],
+      looks: ['uma maçã gigante aparece na fachada.', 'um quadro-negro fica na porta da escola.', 'um clone professor de óculos espera na porta.', 'capelos de formatura voam do telhado.', 'a escola vira universidade de mármore com cúpula dourada.'],
       feat: 'Pátria educadora',
     },
     {
@@ -51,6 +57,7 @@
       baseCost: 1.4e6, baseCps: 1400,
       desc: 'O nome assusta, mas é só o nome do dono.',
       upgrades: ['Cofre maior', 'Juros compostos', 'Cartão Roubar Platinum', 'Agência em cada esquina', 'Banco Central do Roubar'],
+      looks: ['um cofre redondo aparece atrás das colunas.', 'pilhas de moedas crescem na escadaria.', 'cada banco ganha um caixa eletrônico.', 'o banco vira mármore e ganha bandeiras.', 'o frontão vira ouro maciço.'],
       feat: 'Grande demais para quebrar',
     },
     {
@@ -58,6 +65,7 @@
       baseCost: 2e7, baseCps: 7800,
       desc: 'Ciência séria a serviço de mais Roubars.',
       upgrades: ['Jaleco limpo', 'Microscópio novo', 'Tubo de ensaio gigante', 'DNA aprimorado', 'Prêmio Nobel de Roubar'],
+      looks: ['um jaleco branco fica pendurado na parede.', 'a cúpula ganha um telescópio dourado.', 'aparece uma estante de tubos de ensaio coloridos.', 'uma hélice de DNA gira em cima do laboratório.', 'o líquido do frasco vira ouro e a fachada ganha medalha.'],
       feat: 'Ovelha Dolly quem?',
     },
     {
@@ -65,6 +73,7 @@
       baseCost: 3.3e8, baseCps: 44000,
       desc: 'Os fiéis clicam de joelhos.',
       upgrades: ['Velas aromáticas', 'Coral afinado', 'Vitral com o rosto dele', 'Peregrinação anual', 'Milagre comprovado'],
+      looks: ['velas acesas tremulam na escadaria.', 'notas musicais flutuam saindo do templo.', 'um vitral colorido com o rosto dele aparece na fachada.', 'peregrinos sobem a escadaria.', 'o templo flutua e a cúpula vira ouro.'],
       feat: 'Fé inabalável',
     },
     {
@@ -72,6 +81,7 @@
       baseCost: 5.1e9, baseCps: 260000,
       desc: 'Uma cidade inteira onde todo mundo é o Roubar.',
       upgrades: ['Asfalto novo', 'Metrô de Roubarópolis', 'Prefeito Roubar', 'Arranha-céu em forma de rosto', 'Capital federal'],
+      looks: ['carrinhos passam na frente dos prédios.', 'aparece a entrada do metrô.', 'a bandeira do prefeito tremula no alto do prédio.', 'nasce um prédio redondo com a cara dele.', 'o prédio mais alto vira vidro com coroa dourada.'],
       feat: 'Êxodo urbano',
     },
     {
@@ -79,6 +89,7 @@
       baseCost: 7.5e10, baseCps: 1.6e6,
       desc: 'Leva Roubars para onde nenhum Roubar jamais esteve.',
       upgrades: ['Combustível premium', 'Traje espacial sob medida', 'Base na Lua', 'Colônia em Marte', 'Frota interestelar'],
+      looks: ['aparece um tanque de combustível e o foguete decola mais vezes.', 'o Roubar na janela ganha capacete de astronauta.', 'uma lua com bandeira aparece sobre a base.', 'Marte com uma cúpula aparece no céu da base.', 'o foguete vira ouro e ganha um foguetinho reserva.'],
       feat: 'Houston, temos um Roubar',
     },
     {
@@ -86,6 +97,7 @@
       baseCost: 1e12, baseCps: 1e7,
       desc: 'Traz Roubars de dimensões onde ele deu ainda mais certo.',
       upgrades: ['Portal lubrificado', 'Alfândega dimensional', 'Dimensão espelhada', 'Portal dentro do portal', 'Dimensão só de Roubars'],
+      looks: ['o redemoinho gira mais rápido e aparece uma lata de óleo.', 'uma cancela de alfândega controla a entrada.', 'o portal fica roxo e espelhado.', 'um anel dourado gira dentro do portal.', 'rostos do Roubar saem do portal.'],
       feat: 'Vizinhos de dimensão',
     },
     {
@@ -93,6 +105,7 @@
       baseCost: 1.4e13, baseCps: 6.5e7,
       desc: 'Busca Roubars de ontem para trabalhar hoje.',
       upgrades: ['Relógio acertado', 'Roubar do passado', 'Roubar do futuro', 'Paradoxo resolvido', 'Linha do tempo privatizada'],
+      looks: ['o relógio ganha aro de ouro e um pêndulo.', 'o Roubar em sépia aparece na janela.', 'uma tela neon mostra o Roubar do futuro.', 'símbolos do infinito brilham ao lado do relógio.', 'a máquina vira ouro e solta ondas de tempo.'],
       feat: 'De volta para o Roubar',
     },
     {
@@ -100,13 +113,14 @@
       baseCost: 1.7e14, baseCps: 4.3e8,
       desc: 'Todos os universos, todos com a cara dele.',
       upgrades: ['Mapa do multiverso', 'Universo de bolso', 'Big Bang sob encomenda', 'Realidade alternativa VIP', 'Tudo é Roubar'],
+      looks: ['os planetas ganham órbitas tracejadas.', 'luazinhas giram em volta de cada planeta.', 'estrelas piscam em volta dos planetas.', 'os anéis dos planetas viram ouro.', 'o sol e a lua ganham o rosto do Roubar.'],
       feat: 'Em todo lugar ao mesmo tempo',
     },
   ];
 
   /* ---------- Melhorias ---------- */
-  const TIER_COUNTS = [1, 10, 25, 50, 100];
-  const TIER_COST_MULT = [10, 50, 500, 5e4, 5e6];
+  const TIER_COUNTS = [1, 10, 25, 50, 100, 150, 200];
+  const TIER_COST_MULT = [10, 50, 500, 5e4, 5e6, 5e8, 5e10];
   const UPGRADES = [];
 
   BUILDINGS.forEach((b) => {
@@ -116,6 +130,7 @@
         name,
         icon: b.icon,
         desc: b.plural + ' rendem o dobro.',
+        look: b.looks[i],
         cost: b.baseCost * TIER_COST_MULT[i],
         effect: { type: 'building', building: b.id, mult: 2 },
         req: { type: 'building', building: b.id, n: TIER_COUNTS[i] },
@@ -199,6 +214,54 @@
       req: { type: 'golden', n: 27 },
     }
   );
+
+  // Obras da República: melhorias que mudam a cidade inteira.
+  [
+    ['Postes de luz', '💡', 'Toda a produção rende 5% a mais.', { type: 'global', mult: 1.05 }, { type: 'totalBuildings', n: 15 }, 2e4,
+      'postes iluminam a rua e acendem à noite.'],
+    ['Árvores na calçada', '🌳', 'Toda a produção rende 5% a mais.', { type: 'global', mult: 1.05 }, { type: 'totalBuildings', n: 40 }, 3e5,
+      'árvores crescem entre os lotes.'],
+    ['Ônibus dos Clones', '🚌', 'Clones do Roubar rendem o dobro.', { type: 'building', building: 'clone', mult: 2 }, { type: 'building', building: 'clone', n: 25 }, 2e5,
+      'um ônibus cheio de clones passa pela rua.'],
+    ['Calçadão de pedra portuguesa', '🌊', 'Toda a produção rende 5% a mais.', { type: 'global', mult: 1.05 }, { type: 'totalBuildings', n: 80 }, 4e6,
+      'a rua vira um calçadão com ondas pretas e brancas.'],
+    ['Dirigível do Roubar', '🎈', 'Toda a produção rende 10% a mais.', { type: 'global', mult: 1.1 }, { type: 'earned', n: 1e9 }, 5e9,
+      'um dirigível com o rosto dele cruza o céu.'],
+    ['Fogos de artifício', '🎆', 'Toda a produção rende 10% a mais.', { type: 'global', mult: 1.1 }, { type: 'earned', n: 1e11 }, 5e11,
+      'fogos estouram no céu (mais bonitos à noite).'],
+    ['Bondinho do Pão de Roubar', '🚡', 'Toda a produção rende 15% a mais.', { type: 'global', mult: 1.15 }, { type: 'earned', n: 1e13 }, 5e13,
+      'um bondinho com o rosto dele atravessa o céu.'],
+    ['Carnaval da República', '🎉', 'Toda a produção rende 20% a mais.', { type: 'global', mult: 1.2 }, { type: 'earned', n: 1e15 }, 5e15,
+      'confetes caem do céu e os clones dançam.'],
+  ].forEach(([name, icon, desc, effect, req, cost, look], i) => {
+    UPGRADES.push({ id: 'obra-' + (i + 1), name, icon, desc, look, cost, effect, req });
+  });
+
+  // O que as outras melhorias mudam na cidade.
+  const LOOKS = {
+    'clique-1': 'aparece a Praça do Clique, com um dedo gigante soltando calor.',
+    'clique-2': 'um segundo dedo gigante chega à praça.',
+    'clique-3': 'os dedos gigantes ganham luvas brancas.',
+    'clique-4': 'os dedos gigantes ganham faixa e bolsa de gelo.',
+    'clique-5': 'a praça vira um pódio com troféu dourado.',
+    'fatia-1': 'abre a Receita do Roubar, uma cabine de impostos.',
+    'fatia-2': 'a cabine ganha uma caixa registradora.',
+    'fatia-3': 'uma cancela de pedágio sobe e desce na frente da Receita.',
+    'fatia-4': 'um baú de moedas com o rosto dele fica na frente.',
+    'fatia-5': 'a cabine vira um ministério com colunas.',
+    'decreto-1': 'nasce o Palácio da República, com bandeira.',
+    'decreto-2': 'alto-falantes tocam o hino no palácio.',
+    'decreto-3': 'a cidade inteira ganha bandeirinhas de festa.',
+    'decreto-4': 'um livro gigante da Constituição fica na frente do palácio.',
+    'decreto-5': 'um outdoor com a nota de R$ 200 dele aparece no palácio.',
+    'decreto-6': 'uma estátua gigante do Roubar de braços abertos surge atrás do palácio.',
+    'dourado-1': 'nasce a Fonte da Sorte, cercada de trevos.',
+    'dourado-2': 'um ímã gigante fica em cima da fonte.',
+    'dourado-3': 'a fonte jorra moedas de ouro.',
+  };
+  UPGRADES.forEach((u) => {
+    if (!u.look && LOOKS[u.id]) u.look = LOOKS[u.id];
+  });
 
   /* ---------- Conquistas ---------- */
   // cond.type: earnedAll, clicks, handMade, cps, building, eachBuilding,

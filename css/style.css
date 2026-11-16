@@ -372,9 +372,10 @@ body.finger .coin { box-shadow: 0 9px 0 #7a4f0c, 0 0 0 6px rgba(253, 238, 180, 0
   scroll-snap-align: start;
 }
 
-.u-icon { grid-row: span 3; font-size: 1.6rem; line-height: 1.2; }
+.u-icon { grid-row: span 4; font-size: 1.6rem; line-height: 1.2; }
 .u-name { font-weight: 700; line-height: 1.2; }
 .u-desc { margin-top: 2px; font-size: 0.8rem; line-height: 1.3; color: var(--ink-2); }
+.u-look { margin-top: 3px; font-size: 0.76rem; font-style: italic; line-height: 1.3; color: var(--teal); }
 .u-cost { margin-top: 6px; font-family: var(--display); font-weight: 700; color: var(--red); }
 
 .upgrade.can { border-color: var(--ink); background: #fff; }
@@ -698,7 +699,15 @@ body.finger .coin { box-shadow: 0 9px 0 #7a4f0c, 0 0 0 6px rgba(253, 238, 180, 0
   --tw-smoke: #e9f2ed;
   --tw-portal: #1b8a83;
   --tw-ground: #d3e4da;
+  --tw-patch: #e2eee7;
   --tw-hill: rgba(12, 59, 62, 0.13);
+  --tw-wood: #e8dcc6;
+  --tw-red: #c8584f;
+  --tw-brick: #d29a83;
+  --tw-marble: #fbfbf6;
+  --tw-glass: #bfe0e6;
+  --tw-metal: #c4cfcf;
+  --tw-water: #3a9ec2;
   --sky-1: #c9e1d7;
   --sky-2: #eef6f1;
   --stars: 0;
@@ -714,7 +723,7 @@ body.finger .coin { box-shadow: 0 9px 0 #7a4f0c, 0 0 0 6px rgba(253, 238, 180, 0
 }
 
 .town[data-phase='dawn'] { --sky-1: #f1cfae; --sky-2: #f8efe1; --tw-win: #ecd9b0; }
-.town[data-phase='dusk'] { --sky-1: #e3a982; --sky-2: #f2d8c2; --tw-win: #f3d27a; --tw-wall: #f6efe6; --tw-ground: #d9dcc8; }
+.town[data-phase='dusk'] { --sky-1: #e3a982; --sky-2: #f2d8c2; --tw-win: #f3d27a; --tw-wall: #f6efe6; --tw-ground: #d9dcc8; --tw-patch: #e6e6d6; }
 .town[data-phase='night'] {
   --sky-1: #08242b;
   --sky-2: #1b4a50;
@@ -724,16 +733,33 @@ body.finger .coin { box-shadow: 0 9px 0 #7a4f0c, 0 0 0 6px rgba(253, 238, 180, 0
   --tw-lit: #fff3c4;
   --tw-smoke: #6d8a86;
   --tw-ground: #45655f;
+  --tw-patch: #50726b;
   --tw-hill: rgba(0, 0, 0, 0.22);
+  --tw-wood: #8f8670;
+  --tw-red: #7e3c37;
+  --tw-brick: #7c5a4f;
+  --tw-marble: #a9bbb6;
+  --tw-glass: #3f7480;
+  --tw-metal: #6d7d7d;
   --stars: 1;
   --sun: 0;
 }
 
 .town-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 .town .pw { fill: var(--tw-wall); stroke: none; }
+.town .pwood { fill: var(--tw-wood); stroke: none; }
+.town .pred { fill: var(--tw-red); stroke: none; }
+.town .pbrick { fill: var(--tw-brick); stroke: none; }
+.town .pmarble { fill: var(--tw-marble); stroke: none; }
+.town .pgold { fill: var(--gold); stroke: none; }
+.town .pglass { fill: var(--tw-glass); stroke: none; }
+.town .pmetal { fill: var(--tw-metal); stroke: none; }
 .town .pl { fill: none; stroke: var(--tw-ink); stroke-width: 0.7; opacity: 0.5; }
 .town .pd { opacity: 0.75; }
+.town .pv { opacity: 0.25; }
+.town .pgl { stroke: var(--gold-lo); opacity: 0.7; }
 
+/* Céu */
 .town-sky { position: absolute; inset: 0; pointer-events: none; }
 
 .town-sky .stars {
@@ -766,11 +792,14 @@ body.finger .coin { box-shadow: 0 9px 0 #7a4f0c, 0 0 0 6px rgba(253, 238, 180, 0
 }
 
 .town .sun { opacity: var(--sun); }
-.town .sun circle { stroke: var(--gold-lo); }
-.town .sun .n { stroke: var(--gold-lo); }
+.town .sun circle, .town .sun .n { stroke: var(--gold-lo); }
 .town .moon { opacity: var(--stars); }
-.town[data-phase='night'] .moon path { fill: var(--gold-hi); stroke: var(--gold-lo); }
+.town[data-phase='night'] .moon .crescent { fill: var(--gold-hi); stroke: var(--gold-lo); }
+.town .skyface { display: none; }
+.town.tudo-roubar .skyface { display: inline; }
+.town.tudo-roubar .moon .crescent { display: none; }
 
+/* Paisagem que rola */
 .town-scroll {
   position: absolute;
   inset: 0;
@@ -781,11 +810,10 @@ body.finger .coin { box-shadow: 0 9px 0 #7a4f0c, 0 0 0 6px rgba(253, 238, 180, 0
   scrollbar-color: rgba(12, 59, 62, 0.35) transparent;
 }
 
-.town-world {
-  position: relative;
-  height: 100%;
-  min-width: 100%;
-}
+.town.dragging .town-scroll { cursor: grabbing; }
+.town.dragging .plot { pointer-events: none; }
+
+.town-world { position: relative; height: 100%; min-width: 100%; }
 
 .town-hills {
   position: absolute;
@@ -804,29 +832,91 @@ body.finger .coin { box-shadow: 0 9px 0 #7a4f0c, 0 0 0 6px rgba(253, 238, 180, 0
   right: 0;
   bottom: 0;
   height: var(--street);
-  background:
-    repeating-linear-gradient(-45deg, rgba(12, 59, 62, 0.16) 0 1px, transparent 1px 5px),
-    var(--tw-ground);
+  background: repeating-linear-gradient(-45deg, rgba(12, 59, 62, 0.16) 0 1px, transparent 1px 5px), var(--tw-ground);
   border-top: 2px solid var(--tw-ink);
-  box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.35);
   transition: background-color 1s;
 }
 
-.town-lots { position: absolute; inset: 0; pointer-events: none; }
-
-.lot {
-  position: absolute;
-  bottom: calc(var(--street) - 4px);
-  padding: 0;
-  border: 0;
-  border-radius: 4px;
-  background: none;
-  pointer-events: auto;
+/* Calçadão de pedra portuguesa (obra 4) */
+.town.ob-4 .town-ground {
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='22'%3E%3Cpath d='M0 11 Q12 0 24 11 T48 11 V22 H0Z' fill='%23233a3a'/%3E%3C/svg%3E") 0 6px / 48px 22px repeat-x,
+    #f1efe6;
 }
+.town.ob-4[data-phase='night'] .town-ground { filter: brightness(0.6); }
 
-.lot .unit {
+/* Lotes */
+.town-plots { position: absolute; inset: 0; pointer-events: none; }
+
+.plot {
   position: absolute;
   bottom: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 6px 6px 0 0;
+  background: none;
+  pointer-events: auto;
+  color: var(--tw-ink);
+}
+
+.plot-patch {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 4px;
+  height: calc(var(--street) - 6px);
+  border: 1.5px dashed rgba(12, 59, 62, 0.45);
+  border-top: 0;
+  border-radius: 0 0 6px 6px;
+  background: var(--tw-patch);
+  transition: background-color 1s;
+}
+
+.town.ob-4 .plot-patch { background: rgba(241, 239, 230, 0.85); }
+
+.fence {
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  bottom: calc(var(--street) - 4px);
+  height: 13px;
+  background:
+    linear-gradient(var(--tw-ink), var(--tw-ink)) 0 4px / 100% 1.5px no-repeat,
+    repeating-linear-gradient(90deg, var(--tw-ink) 0 1.5px, transparent 1.5px 8px);
+  opacity: 0.55;
+}
+
+.plot.has-all .fence {
+  background:
+    linear-gradient(var(--gold-lo), var(--gold-lo)) 0 4px / 100% 2px no-repeat,
+    repeating-linear-gradient(90deg, var(--gold) 0 2.5px, transparent 2.5px 8px);
+  opacity: 1;
+}
+
+.plot-label {
+  position: absolute;
+  left: 50%;
+  bottom: 9px;
+  z-index: 1;
+  display: grid;
+  justify-items: center;
+  padding: 1px 9px 2px;
+  border: 1.5px solid var(--ink);
+  border-radius: 3px;
+  white-space: nowrap;
+  color: var(--ink);
+  background: var(--paper-hi);
+  box-shadow: 0 2px 0 var(--ink);
+  transform: translateX(-50%);
+}
+
+.pl-name { font-size: 0.74rem; font-weight: 700; line-height: 1.25; }
+.pl-stars { font-size: 0.62rem; line-height: 1; letter-spacing: 0.08em; color: var(--gold-lo); }
+.plot.has-all .plot-label { background: var(--gold-hi); }
+
+.plot .unit {
+  position: absolute;
+  bottom: calc(var(--street) - 4px);
   overflow: visible;
   stroke: var(--tw-ink);
   stroke-width: 1.3;
@@ -835,41 +925,115 @@ body.finger .coin { box-shadow: 0 9px 0 #7a4f0c, 0 0 0 6px rgba(253, 238, 180, 0
   fill: var(--tw-wall);
 }
 
-.lot .unit:nth-of-type(even) { transform: scale(0.92); transform-origin: 50% 100%; }
+.plot.flash .unit, .town-planets.flash .planet { animation: tw-flash 1.3s ease-out; }
+.town-clones.flash .clone { filter: drop-shadow(0 0 8px rgba(253, 224, 120, 1)); }
+.plot.flash .plot-label { animation: tw-label 1.3s ease-out; }
+.town.flash { animation: tw-townflash 1.3s ease-out; }
 
-.plaque {
-  position: absolute;
-  right: -8px;
-  bottom: -26px;
-  z-index: 2;
-  padding: 0 8px;
-  border: 1.5px solid var(--ink);
-  border-radius: 3px;
-  font-family: var(--display);
-  font-size: 0.95rem;
-  font-weight: 800;
-  line-height: 1.35;
-  color: var(--ink);
-  background: var(--gold-hi);
-  box-shadow: 0 2px 0 var(--gold-lo);
-}
+/* Partes que dependem das melhorias */
+.town .t1, .town .t2, .town .t3, .town .t4, .town .t5, .town .t6, .town .t7 { display: none; }
+.has-1 .t1, .has-2 .t2, .has-3 .t3, .has-4 .t4, .has-5 .t5, .has-6 .t6, .has-7 .t7 { display: inline; }
+.has-1 .x1, .has-2 .x2, .has-3 .x3, .has-4 .x4, .has-5 .x5 { display: none; }
 
+/* Materiais que mudam com as melhorias */
+.town svg .finger { fill: var(--tw-wall); }
+.plot-dedo.has-3 .body { fill: url(#tw-brick); }
+.plot-dedo.has-4 .finger { fill: url(#tw-metal); }
+.plot-dedo.has-7 .finger { fill: url(#tw-glass); }
+.plot-dedo.has-5 .btn { fill: var(--gold); }
+.plot-dedo.has-4 .a-tap { animation-duration: 0.32s; }
+.plot-fazenda.has-4 .body { fill: url(#tw-red); }
+.plot-fabrica.has-3 .body { fill: url(#tw-brick); }
+.plot-fabrica.has-3 .w { fill: var(--tw-lit); }
+.plot-fabrica.has-1 .a-smoke { animation-duration: 2.2s; }
+.plot-escola.has-5 .body { fill: url(#tw-marble); }
+.plot-banco.has-4 .body, .plot-banco.has-4 .pedi { fill: url(#tw-marble); }
+.plot-banco.has-5 .pedi { fill: url(#tw-gold); }
+.plot-laboratorio.has-5 .lq { fill: var(--gold); opacity: 1; }
+.plot-templo.has-5 .dome { fill: url(#tw-gold); }
+.plot-templo.has-5 .lev { animation: tw-levitate 3s ease-in-out infinite alternate; }
+.plot-cidade.has-5 .bodyB { fill: url(#tw-glass); }
+.plot-foguete.has-5 .rbody { fill: url(#tw-gold); }
+.plot-foguete.has-1 .a-rocket, .plot-foguete.has-1 .a-flame { animation-duration: 16s; }
+.plot-portal.has-1 .a-swirl { animation-duration: 1.8s; }
+.plot-portal.has-3 .pt { fill: #6a3d9a; }
+.plot-portal.has-3 .sw2 { stroke: #e6d2ff; }
+.plot-maquina.has-1 .clockface { fill: var(--gold-hi); stroke: var(--gold-lo); stroke-width: 3; }
+.plot-maquina.has-5 .body { fill: url(#tw-gold); }
+.plot-praca.has-3 .bigfinger, .plot-praca.has-3 .cuff { fill: #ffffff; }
+.plot-receita .body { fill: url(#tw-h); }
+.plot-receita.has-5 .body { fill: url(#tw-marble); }
+.town-clones.has-3 .clone { animation-duration: calc(var(--t) / 1.6); }
+.town-planets.has-4 .ring { stroke: var(--gold); stroke-width: 3.4; }
+
+/* Cores das peças */
 .town svg .n { fill: none; }
 .town svg .g { fill: var(--gold); }
 .town svg .gs { stroke: var(--gold-lo); }
 .town svg .r { fill: var(--red); }
 .town svg .k { fill: var(--tw-ink); }
+.town svg .light { stroke: #fff; fill: none; }
 .town svg .w { fill: var(--tw-win); transition: fill 1s; }
 .town svg .sm { fill: var(--tw-smoke); stroke-width: 1; }
+.town svg .sm.gold { fill: var(--gold-hi); stroke: var(--gold-lo); }
 .town svg .lq { fill: var(--teal); opacity: 0.7; stroke: none; }
 .town svg .bb { fill: var(--tw-wall); stroke-width: 0.8; }
 .town svg .pt { fill: var(--tw-portal); stroke: none; }
 .town svg .sw2 { stroke: var(--tw-wall); }
 .town svg .board { fill: var(--paper-hi); }
-.town svg .ghost { opacity: 0.55; filter: sepia(1); }
+.town .plot-escola svg .board { fill: #23443c; }
+.town svg .chalk { stroke: #f3f9f5; }
+.town svg .ghost { opacity: 0.6; filter: sepia(1); }
+.town svg .neon { filter: hue-rotate(150deg) saturate(3) brightness(1.2); }
+.town svg .band { fill: #f2e6cf; stroke-width: 0.8; }
+.town svg .ice { fill: #a9dcef; stroke-width: 0.8; }
+.town svg .hay { fill: var(--gold-hi); }
+.town svg .water { stroke: var(--tw-water); stroke-dasharray: 2 3; }
+.town svg .jet { stroke: var(--tw-water); stroke-dasharray: 3 3; }
+.plot-fonte.has-3 .jet { stroke: var(--gold); }
+.town svg .water-s { fill: var(--tw-water); opacity: 0.55; }
+.town svg .belt { fill: #4f6464; }
+.town svg .box { fill: var(--tw-wood); stroke-width: 0.8; }
+.town svg .seal { fill: #3aa66e; }
+.town svg .leaf { fill: #4c9b5e; stroke-width: 0.6; }
+.town svg .coat { fill: #ffffff; stroke-width: 0.9; }
+.town svg .tube1 { fill: var(--teal); stroke-width: 0.7; }
+.town svg .tube2 { fill: var(--red); stroke-width: 0.7; }
+.town svg .tube3 { fill: var(--gold); stroke-width: 0.7; }
+.town svg .vit { fill: #5aa6c9; }
+.town svg .vit2 { fill: var(--red); stroke-width: 0.6; }
+.town svg .vit3 { fill: var(--gold); stroke-width: 0.6; }
+.town svg .candle { fill: #fffaf0; stroke-width: 0.6; }
+.town svg .shadow { fill: rgba(0, 0, 0, 0.18); stroke: none; }
+.town svg .atm { fill: var(--tw-metal); }
+.town svg .screen { fill: #1d6f83; stroke-width: 0.6; }
+.town svg .tank { fill: var(--tw-metal); }
+.town svg .mars { fill: #c4532f; }
+.town svg .dome2 { fill: #d7f1f7; stroke-width: 0.7; }
+.town svg .helmet { fill: rgba(190, 230, 245, 0.35); stroke: #9fd6ea; stroke-width: 1.4; }
+.town svg .gate { stroke: var(--red); stroke-dasharray: 5 4; fill: none; }
+.town svg .post { fill: var(--paper-hi); }
+.town svg .chest { fill: #9b6b3a; }
+.town svg .book { fill: #fffaf0; }
+.town svg .flag { fill: #2d8a5a; }
+.town svg .note200 { fill: #d9cdb4; }
+.town svg .glassb { stroke-width: 1; }
+.town svg .magnet { fill: var(--red); }
+.town svg .tip { fill: var(--tw-metal); }
+.town svg .clover { fill: #3e9a52; stroke-width: 0.6; }
+.town svg .orbit { stroke: var(--gold-lo); }
+.town svg .moonlet { fill: var(--tw-wall); }
+.town svg .badge { fill: #ffffff; stroke-width: 0.6; }
+.town svg .cup { fill: #ffffff; stroke-width: 0.7; }
+.town svg .steam { stroke: var(--tw-ink); }
+.town svg .sign { fill: var(--red); stroke-width: 0.8; }
+.town svg .heat { stroke: #e06a2c; }
+.town svg .tw-t { font-family: var(--display); font-size: 11px; font-weight: 800; text-anchor: middle; fill: var(--tw-ink); stroke: none; }
+.town svg .tw-t.light { font-family: var(--body); font-size: 6.5px; fill: #fff; }
 .town[data-phase='night'] svg .gs { stroke: var(--gold); }
-.town[data-phase='night'] .lot .unit { filter: drop-shadow(0 0 5px rgba(255, 210, 90, 0.35)); }
+.town[data-phase='night'] .plot .unit { filter: drop-shadow(0 0 5px rgba(255, 210, 90, 0.35)); }
 
+/* Planetas, clones e enfeites */
 .town-planets { position: absolute; inset: 0; pointer-events: none; }
 
 .planet {
@@ -902,8 +1066,75 @@ body.finger .coin { box-shadow: 0 9px 0 #7a4f0c, 0 0 0 6px rgba(253, 238, 180, 0
   animation: tw-walk var(--t) linear var(--d) infinite;
 }
 
-.clone .unit { transform: scale(var(--s, 1)); transform-origin: 50% 100%; }
+.clone .unit { position: absolute; bottom: 0; left: 0; transform: scale(var(--s, 1)); transform-origin: 50% 100%; }
+.clone .mini { display: none; left: -16px; transform: scale(0.55); }
+.town-clones.has-4 .clone .mini { display: block; }
+.town.ob-8 .clone .unit:not(.mini) { animation: tw-dance 0.6s ease-in-out infinite alternate; }
 
+.town-deco { position: absolute; inset: 0; pointer-events: none; }
+.deco { position: absolute; bottom: calc(var(--street) - 4px); }
+.deco .obj { display: block; overflow: visible; stroke: var(--tw-ink); stroke-width: 1.2; fill: var(--tw-wall); }
+.town svg .leafy { fill: #7fb98c; }
+.town[data-phase='night'] svg .leafy { fill: #3d6b4b; }
+.town svg .bulb { fill: var(--tw-win); }
+.town[data-phase='night'] .lamp { filter: drop-shadow(0 0 7px rgba(255, 220, 120, 0.95)); }
+
+.bunting {
+  display: none;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 44px;
+  height: 18px;
+  pointer-events: none;
+  background:
+    linear-gradient(var(--tw-ink), var(--tw-ink)) 0 0 / 100% 1px no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='16'%3E%3Cpath d='M2 0h12l-6 12z' fill='%23b3304a'/%3E%3Cpath d='M18 0h12l-6 12z' fill='%23e3b23c'/%3E%3Cpath d='M34 0h12l-6 12z' fill='%231b8a83'/%3E%3Cpath d='M50 0h12l-6 12z' fill='%23f3f9f5' stroke='%230c3b3e' stroke-width='.6'/%3E%3C/svg%3E") 0 0 / 64px 16px repeat-x;
+}
+.town.festa .bunting { display: block; }
+
+.bus {
+  display: none;
+  position: absolute;
+  left: -90px;
+  bottom: 2px;
+  z-index: 30;
+  animation: tw-bus var(--t, 30s) linear infinite;
+}
+.town.ob-3 .bus { display: block; }
+.bus svg { display: block; overflow: visible; stroke: var(--tw-ink); stroke-width: 1.2; fill: var(--tw-wall); }
+.town svg .busbody { fill: var(--gold-hi); }
+
+/* Céu das obras: dirigível, bondinho, fogos e confete */
+.town-fx { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.town-fx > * { display: none; }
+.town-fx svg { overflow: visible; stroke: var(--tw-ink); stroke-width: 1.2; fill: var(--tw-wall); }
+.town.ob-5 .blimp { display: block; position: absolute; top: 8px; left: 0; animation: tw-blimp 46s linear infinite; }
+.town.ob-7 .cable { display: block; position: absolute; inset: 0; width: 100%; height: 100%; }
+.cable line { stroke: var(--tw-ink); stroke-width: 1.2; }
+.town.ob-7 .gondola { display: block; position: absolute; animation: tw-gondola 22s ease-in-out infinite alternate; }
+.town.ob-6 .burst { display: block; position: absolute; opacity: 0; animation: tw-burst 4.5s ease-out infinite; }
+.burst.b1 { left: 12%; top: 6px; }
+.burst.b2 { left: 48%; top: 22px; animation-delay: -1.5s !important; }
+.burst.b3 { left: 78%; top: 2px; animation-delay: -3s !important; }
+.burst.b1 svg { stroke: var(--gold); fill: var(--gold); }
+.burst.b2 svg { stroke: #e2506a; fill: #e2506a; }
+.burst.b3 svg { stroke: #5fd0c4; fill: #5fd0c4; }
+.town[data-phase='night'] .burst svg { filter: drop-shadow(0 0 6px currentColor); }
+.town.ob-8 .confetti { display: block; position: absolute; inset: 0; }
+.confetti i {
+  position: absolute;
+  top: -10px;
+  width: 5px;
+  height: 8px;
+  animation: tw-confetti var(--t) linear var(--d) infinite;
+}
+.confetti i[style*='--c:0'] { background: var(--red); }
+.confetti i[style*='--c:1'] { background: var(--gold); }
+.confetti i[style*='--c:2'] { background: var(--teal); }
+.confetti i[style*='--c:3'] { background: #8a5fd0; }
+
+/* Aviso de terreno vazio e cartão */
 .town-empty {
   position: absolute;
   left: 50%;
@@ -925,9 +1156,11 @@ body.finger .coin { box-shadow: 0 9px 0 #7a4f0c, 0 0 0 6px rgba(253, 238, 180, 0
 
 .town-card {
   position: absolute;
-  z-index: 30;
+  z-index: 40;
   top: 8px;
-  width: min(290px, calc(100% - 16px));
+  width: min(300px, calc(100% - 16px));
+  max-height: calc(100% - 16px);
+  overflow-y: auto;
   padding: 10px 12px 12px;
   border: 2px solid var(--ink);
   border-radius: 6px;
@@ -954,6 +1187,12 @@ body.finger .coin { box-shadow: 0 9px 0 #7a4f0c, 0 0 0 6px rgba(253, 238, 180, 0
 .town-card dl { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; font-size: 0.86rem; }
 .town-card dt { color: var(--ink-2); }
 .town-card dd { font-weight: 700; text-align: right; }
+.card-sub { margin-top: 8px; font-size: 0.8rem; font-weight: 700; }
+.card-ups { display: grid; gap: 1px; margin-top: 2px; font-size: 0.82rem; }
+.card-ups li { display: flex; gap: 6px; color: var(--ink-2); }
+.card-ups li.got { font-weight: 600; color: var(--ink); }
+.card-ups .mark { width: 1em; color: var(--gold-lo); }
+.card-next { margin-top: 6px; font-size: 0.8rem; font-style: italic; color: var(--ink-2); }
 
 .golden.in-town {
   position: absolute;
@@ -966,6 +1205,8 @@ body.finger .coin { box-shadow: 0 9px 0 #7a4f0c, 0 0 0 6px rgba(253, 238, 180, 0
 
 /* Animações da cidade */
 .town .a-tap { animation: tw-tap 0.55s ease-in-out var(--d) infinite; }
+.town .a-tap.tap2 { animation-delay: calc(var(--d) - 0.27s); }
+.town .a-tap.slow { animation-duration: 1.4s; }
 .town .a-sway { transform-box: fill-box; transform-origin: 50% 100%; animation: tw-sway 2.4s ease-in-out var(--d) infinite alternate; }
 .town .a-sway.s2 { animation-duration: 3.1s; }
 .town .a-smoke { transform-box: fill-box; transform-origin: 50% 50%; opacity: 0; animation: tw-smoke 3s ease-out infinite; animation-delay: calc(var(--d) + var(--i) * -1s); }
@@ -978,6 +1219,7 @@ body.finger .coin { box-shadow: 0 9px 0 #7a4f0c, 0 0 0 6px rgba(253, 238, 180, 0
 .town .a-flame { opacity: 0; animation: tw-flame 28s linear var(--d) infinite; }
 .town .a-swirl { transform-box: fill-box; transform-origin: 50% 50%; animation: tw-spin 4s linear infinite; }
 .town .a-swirl.s2 { animation-duration: 6s; animation-direction: reverse; }
+.town .a-swirl.s3 { animation-duration: 3s; animation-direction: reverse; }
 .town .a-hand-h, .town .a-hand-m { transform-box: view-box; transform-origin: 40px 24px; animation: tw-spin 9s linear infinite; }
 .town .a-hand-m { animation-duration: 1.1s; }
 .town .a-gear { transform-box: fill-box; transform-origin: 50% 50%; animation: tw-spin 5s linear infinite; }
@@ -986,6 +1228,28 @@ body.finger .coin { box-shadow: 0 9px 0 #7a4f0c, 0 0 0 6px rgba(253, 238, 180, 0
 .town .a-bob { animation: tw-bob 0.5s ease-in-out var(--d) infinite alternate; }
 .town .a-leg { transform-box: fill-box; transform-origin: 50% 0; animation: tw-leg 0.5s ease-in-out infinite alternate; }
 .town .a-leg.l2 { animation-direction: alternate-reverse; }
+.town .a-twinkle { transform-box: fill-box; transform-origin: 50% 50%; animation: tw-twinkle 1.6s ease-in-out infinite; animation-delay: calc(var(--d, 0s) + var(--i) * -0.4s); }
+.town .a-water { stroke-dashoffset: 0; animation: tw-dash 0.8s linear infinite; }
+.town .a-belt { animation: tw-belt 3s linear infinite; animation-delay: calc(var(--d) + var(--i) * -1s); }
+.town .a-arm { transform-box: view-box; transform-origin: 49px 32px; animation: tw-arm 2s ease-in-out var(--d) infinite alternate; }
+.town .a-cap { transform-box: fill-box; transform-origin: 50% 50%; animation: tw-cap 2.6s ease-out infinite; animation-delay: calc(var(--d) + var(--i) * -0.85s); }
+.town .a-dna { transform-box: fill-box; transform-origin: 50% 50%; animation: tw-dna 2.4s ease-in-out infinite alternate; }
+.town .a-note { animation: tw-note 3s ease-out infinite; animation-delay: calc(var(--d, 0s) + var(--i) * -1s); }
+.town .a-flicker { transform-box: fill-box; transform-origin: 50% 100%; animation: tw-flicker 0.4s ease-in-out infinite alternate; animation-delay: calc(var(--i) * -0.13s); }
+.town .a-car { animation: tw-car 5s linear infinite; animation-delay: var(--d); }
+.town .a-car.c2 { animation-duration: 7s; animation-direction: reverse; }
+.town .a-gate { transform-box: view-box; animation: tw-gate 4s ease-in-out infinite; }
+.plot-portal .a-gate { transform-origin: 20px 82px; }
+.plot-receita .a-gate { transform-origin: 74.5px 70px; }
+.town .a-popface { transform-box: fill-box; transform-origin: 50% 50%; opacity: 0; animation: tw-popface 3s ease-out infinite; animation-delay: calc(var(--i) * -1s); }
+.town .a-pend { transform-box: view-box; transform-origin: 40px 86px; animation: tw-pend 1.2s ease-in-out infinite alternate; }
+.town .a-glow { animation: tw-glowpulse 1.8s ease-in-out infinite alternate; }
+.town .a-ripple { transform-box: fill-box; transform-origin: 50% 50%; animation: tw-ripple 2.4s ease-out infinite; animation-delay: calc(var(--i) * -1.2s); }
+.town .a-orbit { transform-box: view-box; transform-origin: 23px 23px; animation: tw-spin 3.5s linear infinite; }
+.town .a-steam { animation: tw-note 1.6s ease-out infinite; }
+.town .a-drawer { animation: tw-drawer 2.5s ease-in-out infinite; }
+.town .a-heat { animation: tw-heat 1.2s ease-in-out infinite; }
+.town .a-coinfall { animation: tw-coinfall 1.6s ease-in infinite; animation-delay: calc(var(--i) * -0.55s); }
 body.frenzy .clone { animation-duration: calc(var(--t) / 3); }
 body.frenzy .town .a-leg, body.frenzy .town .a-bob { animation-duration: 0.18s; }
 .town.paused *, .town.paused *::before, .town.paused *::after { animation-play-state: paused !important; }
@@ -1022,9 +1286,58 @@ body.frenzy .town .a-leg, body.frenzy .town .a-bob { animation-duration: 0.18s; 
 @keyframes tw-bob { from { transform: none; } to { transform: translateY(-1.5px); } }
 @keyframes tw-leg { from { transform: rotate(-16deg); } to { transform: rotate(16deg); } }
 @keyframes tw-peek { from { transform: translateY(10px); } to { transform: translateY(-4px); } }
+@keyframes tw-twinkle { 0%, 100% { opacity: 0.2; transform: scale(0.6); } 50% { opacity: 1; transform: scale(1.1); } }
+@keyframes tw-dash { to { stroke-dashoffset: -10; } }
+@keyframes tw-belt { 0% { transform: none; opacity: 0; } 10%, 85% { opacity: 1; } 100% { transform: translateX(62px); opacity: 0; } }
+@keyframes tw-arm { from { transform: rotate(-18deg); } to { transform: rotate(14deg); } }
+@keyframes tw-cap { 0% { opacity: 0; transform: none; } 15% { opacity: 1; } 100% { opacity: 0; transform: translateY(-34px) rotate(200deg); } }
+@keyframes tw-dna { from { transform: scaleX(1); } to { transform: scaleX(-1); } }
+@keyframes tw-note { 0% { opacity: 0; transform: none; } 20% { opacity: 1; } 100% { opacity: 0; transform: translate(6px, -22px); } }
+@keyframes tw-flicker { from { transform: scaleY(0.8); opacity: 0.8; } to { transform: scaleY(1.15); opacity: 1; } }
+@keyframes tw-car { from { transform: translateX(-4px); } to { transform: translateX(96px); } }
+@keyframes tw-gate { 0%, 55%, 100% { transform: none; } 65%, 90% { transform: rotate(-70deg); } }
+@keyframes tw-popface {
+  0% { opacity: 0; transform: scale(0.2); }
+  25% { opacity: 1; }
+  70% { opacity: 1; transform: translate(var(--px), var(--py)) scale(1); }
+  100% { opacity: 0; transform: translate(var(--px), var(--py)) scale(1.1); }
+}
+@keyframes tw-pend { from { transform: rotate(-22deg); } to { transform: rotate(22deg); } }
+@keyframes tw-glowpulse { from { opacity: 0.45; } to { opacity: 1; } }
+@keyframes tw-ripple { 0% { opacity: 0.9; transform: scale(1); } 100% { opacity: 0; transform: scale(1.7); } }
+@keyframes tw-drawer { 0%, 60%, 100% { transform: none; } 70%, 90% { transform: translateY(3px); } }
+@keyframes tw-heat { 0% { opacity: 0; transform: none; } 40% { opacity: 1; } 100% { opacity: 0; transform: translateY(-10px); } }
+@keyframes tw-coinfall {
+  0% { opacity: 0; transform: none; }
+  15% { opacity: 1; }
+  50% { transform: translate(calc(var(--cx) * 0.6), -16px); }
+  100% { opacity: 0.2; transform: translate(var(--cx), 30px); }
+}
+@keyframes tw-levitate { from { transform: none; } to { transform: translateY(-6px); } }
+@keyframes tw-dance { from { transform: scale(var(--s, 1)) rotate(-8deg); } to { transform: scale(var(--s, 1)) translateY(-3px) rotate(8deg); } }
+@keyframes tw-bus { from { transform: none; } to { transform: translateX(var(--dist)); } }
+@keyframes tw-blimp { from { transform: translateX(-120px); } to { transform: translateX(calc(100vw + 20px)); } }
+@keyframes tw-gondola { from { left: 4%; top: calc(18% + 2px); } to { left: calc(96% - 34px); top: calc(34% - 4px); } }
+@keyframes tw-burst {
+  0% { opacity: 0; transform: scale(0.1); }
+  10% { opacity: 1; }
+  45% { opacity: 0; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1); }
+}
+@keyframes tw-confetti {
+  from { transform: translateY(0) rotate(0); }
+  to { transform: translateY(260px) rotate(540deg); }
+}
+@keyframes tw-flash {
+  0% { filter: drop-shadow(0 0 0 rgba(227, 178, 60, 0)); }
+  25% { filter: drop-shadow(0 0 14px rgba(253, 224, 120, 1)) brightness(1.15); }
+  100% { filter: drop-shadow(0 0 0 rgba(227, 178, 60, 0)); }
+}
+@keyframes tw-label { 0%, 100% { transform: translateX(-50%); } 30% { transform: translateX(-50%) scale(1.2); } }
+@keyframes tw-townflash { 0% { box-shadow: inset 0 0 0 0 rgba(253, 224, 120, 0); } 30% { box-shadow: inset 0 0 60px 10px rgba(253, 224, 120, 0.9); } 100% { box-shadow: inset 0 0 0 0 rgba(253, 224, 120, 0); } }
 
 @media (hover: hover) {
-  .lot:hover .unit { filter: drop-shadow(0 0 4px rgba(227, 178, 60, 0.9)); }
+  .plot:hover .unit { filter: drop-shadow(0 0 4px rgba(227, 178, 60, 0.9)); }
 }
 
 /* ---------- Telas largas ---------- */
@@ -1090,7 +1403,7 @@ body.frenzy .town .a-leg, body.frenzy .town .a-bob { animation-duration: 0.18s; 
     width: clamp(130px, min(calc(100cqh - 88px), 62cqw), 380px);
     margin-bottom: 14px;
   }
-  .town { grid-area: town; height: clamp(190px, 28dvh, 290px); }
+  .town { grid-area: town; height: clamp(200px, 31dvh, 320px); }
 
   .store {
     grid-area: store;

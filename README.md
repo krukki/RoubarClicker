@@ -11,10 +11,13 @@ o progresso sozinho.
   para ganhar dinheiro sem clicar.
 - Compre melhorias para dobrar a produção.
 - Clique no Roubar Dourado quando ele aparecer: ele dá um bônus temporário.
-- Embaixo da moeda fica a cidade: cada construção comprada aparece lá, os
-  Clones andam pela rua com o rosto do Roubar e o céu muda com a hora do dia.
-  Toque numa construção para ver quanto ela rende. Fique de olho: às vezes o
-  Roubar Dourado se esconde entre os prédios.
+- Embaixo da moeda fica a cidade: cada tipo de construção tem o próprio lote,
+  os Clones andam pela rua com o rosto do Roubar e o céu muda com a hora do
+  dia. Toque num lote para ver quanto ele rende e quais melhorias faltam.
+- Toda melhoria muda alguma coisa na cidade (o cartão da melhoria na loja diz
+  o quê). As melhorias de clique, imposto, decreto e Roubar Dourado ganham
+  lotes próprios, e as Obras da República mudam a cidade inteira.
+- Fique de olho: às vezes o Roubar Dourado se esconde entre os prédios.
 - Quando juntar R$ 1 bilhão no total, você pode renascer: recomeça do zero,
   mas com um bônus permanente de produção.
 

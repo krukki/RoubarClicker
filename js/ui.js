@@ -259,6 +259,7 @@
           btn.appendChild(icon);
           btn.appendChild(el('span', 'u-name', u.name));
           btn.appendChild(el('span', 'u-desc', u.desc));
+          if (u.look) btn.appendChild(el('span', 'u-look', 'Na cidade: ' + u.look));
           btn.appendChild(el('span', 'u-cost', money(u.cost)));
           btn.addEventListener('click', () => this.buyUpgrade(u.id));
           box.appendChild(btn);
@@ -286,8 +287,12 @@
     },
 
     buyUpgrade(id) {
-      if (this.game.buyUpgrade(id)) Sound.buy();
-      else Sound.deny();
+      if (this.game.buyUpgrade(id)) {
+        Sound.buy();
+        RC.Town.onUpgrade(id);
+      } else {
+        Sound.deny();
+      }
       this.dirty = true;
     },
 
