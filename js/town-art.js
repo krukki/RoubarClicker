@@ -504,6 +504,117 @@
     },
   };
 
+  /* ----- Memorial da República: um monumento por compra da Loja de Ouro ----- */
+  ART.memorial = {
+    w: 250, h: 112,
+    svg:
+      '<rect x="2" y="104" width="246" height="8" fill="url(#tw-hd)"/>' +
+      // 1 Herança: baú
+      T(1, '<rect class="chest" x="6" y="90" width="22" height="14"/><path class="g" d="M6 90Q17 79 28 90Z"/>' +
+        '<circle class="g" cx="17" cy="95" r="2.4"/>' + sparkle(26, 80, 2.5, 0)) +
+      // 2 Dedos de estimação: estátua do dedo
+      T(2, '<rect class="body" x="37" y="92" width="18" height="12" fill="url(#tw-stone)"/>' +
+        '<path class="finger" d="M41.5 92V70a4.5 4.5 0 0 1 9 0V92Z"/><path class="n" d="M43.5 70h5"/>') +
+      // 3 Chafariz de ouro
+      T(3, '<path class="n jetg a-water" d="M79 78Q70 72 65 94M79 78Q88 72 93 94" stroke-width="1.6"/>' +
+        '<rect class="g" x="76" y="78" width="6" height="20"/><path class="g" d="M72 78H86L84 82H74Z"/>' +
+        '<path class="g" d="M62 96Q79 106 96 96V100Q79 110 62 100Z"/>') +
+      // 7 Desconto de fundador: arco no centro
+      T(7, '<path class="body" d="M102 104V70a24 24 0 0 1 48 0V104H139V72a13 13 0 0 0-26 0V104Z" fill="url(#tw-stone)"/>' +
+        '<rect class="g" x="100" y="68" width="52" height="3"/><circle class="g" cx="126" cy="50" r="9.5"/>' + face(118, 42, 16)) +
+      // 4 Dedo de platina: mão aberta
+      T(4, '<rect class="body" x="158" y="94" width="18" height="10" fill="url(#tw-stone)"/>' +
+        '<rect class="plat" x="160" y="78" width="14" height="16" rx="3"/>' +
+        [160, 163.7, 167.4, 171].map((x, i) => '<rect class="plat" x="' + x + '" y="' + (66 + Math.abs(1.5 - i) * 2) + '" width="3" height="14" rx="1.5"/>').join('') +
+        '<path class="plat" d="M160 84Q154 80 155 75L158 76L160 80Z"/>' + sparkle(178, 72, 2.5, 1)) +
+      // 6 Trevo eterno
+      T(6, '<path class="n" d="M195 104Q193 96 195 88" stroke-width="1.8"/>' +
+        '<g class="clover big"><circle cx="190.5" cy="79.5" r="5.5"/><circle cx="199.5" cy="79.5" r="5.5"/>' +
+        '<circle cx="190.5" cy="88.5" r="5.5"/><circle cx="199.5" cy="88.5" r="5.5"/></g>') +
+      // 5 Farol da madrugada
+      T(5, '<path class="beam night" d="M214 57L184 46V68Z"/>' +
+        '<path class="body" d="M212 104L215 62H225L228 104Z" fill="url(#tw-h)"/>' +
+        '<path class="r" d="M214.2 74H225.8L226.4 82H213.6Z"/><path class="r" d="M212.8 92H227.2L227.6 99H212.4Z"/>' +
+        '<rect class="w" x="214" y="52" width="12" height="10"/><path class="r" d="M212.5 52L220 44L227.5 52Z"/>') +
+      // 8 Obelisco das Eras
+      T(8, '<path class="body" d="M233 104L236.5 36H241.5L245 104Z" fill="url(#tw-stone)"/>' +
+        '<path class="g" d="M236.5 36L239 26L241.5 36Z"/>' + sparkle(239, 20, 2.5, 2)),
+  };
+
+  /* ----- Acontecimentos da cidade ----- */
+  // Bonequinho no formato do clone (24 x 46), em qualquer posição e tamanho.
+  const guy = (x, y, s, fill, head, extra) =>
+    '<g transform="translate(' + x + ' ' + y + ') scale(' + s + ')"><g class="a-bob">' +
+    '<path class="n a-leg" d="M10 33L9.5 45" stroke-width="2.4"/><path class="n a-leg l2" d="M14 33L14.5 45" stroke-width="2.4"/>' +
+    '<path class="n" d="M6.5 24L3.5 33M17.5 24L20.5 33" stroke-width="2"/>' +
+    '<path ' + fill + ' d="M5.5 34L7 22Q12 19.5 17 22L18.5 34Z"/>' + head + (extra || '') + '</g></g>';
+  const shades = '<rect class="k" x="3.5" y="8.5" width="17" height="4.6" rx="1.6"/>';
+  const cap = '<rect class="r" x="5" y="-7" width="14" height="9"/><rect class="g" x="5" y="0" width="14" height="2"/>';
+
+  const EVENT_ART = {
+    ladrao: {
+      w: 40, h: 46,
+      svg: guy(0, 0, 1, 'fill="url(#tw-stripe)"',
+        '<circle cx="12" cy="11" r="9.5"/><path class="k" d="M2.6 8.5Q12 -3 21.4 8.5Z"/>' +
+        '<rect class="k" x="2.6" y="8.5" width="18.8" height="5"/>' +
+        '<circle class="eye" cx="8.5" cy="11" r="1.3"/><circle class="eye" cx="15.5" cy="11" r="1.3"/>',
+        '<path class="bag" d="M22 22Q20 26 21 32Q27 36 33 32Q34 26 32 22Q27 20 22 22Z"/><path class="n" d="M24 21.5L27 18L30 21.5"/>' +
+        '<text class="tw-t" x="27" y="30.4" style="font-size:6.5px">R$</text>'),
+    },
+    ovni: {
+      w: 76, h: 130,
+      svg:
+        '<path class="beam" d="M26 24H50L66 128H10Z"/>' +
+        '<g class="a-abduct">' + guy(27, 72, 0.9, 'fill="url(#tw-hd)"', face(2, 1, 20)) + '</g>' +
+        '<path class="dome2" d="M24 14a14 12 0 0 1 28 0z"/>' +
+        '<ellipse class="saucer" cx="38" cy="18" rx="34" ry="9"/>' +
+        '<circle class="g a-blink" style="--i:0" cx="16" cy="19" r="2.4"/><circle class="g a-blink" style="--i:2" cx="38" cy="23" r="2.4"/>' +
+        '<circle class="g a-blink" style="--i:4" cx="60" cy="19" r="2.4"/>',
+    },
+    desfile: {
+      w: 100, h: 64,
+      svg:
+        guy(0, 18, 1, 'fill="url(#tw-red)"', face(2, 1, 20) + cap,
+          '<path class="n" d="M20.5 33V-14" stroke-width="1.4"/><path class="flag a-flag" d="M20.5 -14h14v9h-14z"/>') +
+        guy(38, 18, 1, 'fill="url(#tw-red)"', face(2, 1, 20) + cap,
+          '<ellipse class="drum" cx="12" cy="30" rx="8.5" ry="5"/><path class="n" d="M3 22L9 28M21 22L15 28" stroke-width="1.4"/>') +
+        guy(76, 18, 1, 'fill="url(#tw-red)"', face(2, 1, 20) + cap,
+          '<path class="g" d="M-12 13h12v4h-12l-5 3v-10z"/>'),
+    },
+    chuva: {
+      w: 90, h: 100,
+      svg:
+        '<g class="rain">' + [14, 26, 38, 50, 62, 74].map((x, i) =>
+          '<path class="n a-rain" style="--i:' + i + '" d="M' + x + ' 40l-5 56" stroke-width="1.6"/>').join('') + '</g>' +
+        '<path class="cloud" d="M20 36a14 14 0 0 1 3-27.5a20 20 0 0 1 38-2a15.5 15.5 0 0 1 10 29.5z" fill="url(#tw-h)"/>',
+    },
+    carro: {
+      w: 96, h: 62,
+      svg:
+        '<g transform="rotate(-13 48 52)">' +
+        '<rect x="8" y="20" width="58" height="28" rx="2" fill="url(#tw-metal)"/>' +
+        '<path d="M66 28h13l9 10v10h-22z" fill="url(#tw-metal)"/><path class="w" d="M69 31h9l6 7h-15z"/>' +
+        '<text class="tw-t" x="37" y="39">R$</text><path class="n" d="M12 24h50M12 44h50" stroke-width=".8"/>' +
+        '<circle class="k" cx="24" cy="50" r="6.5"/><circle class="k" cx="74" cy="50" r="6.5"/>' +
+        '<circle class="n light" cx="24" cy="50" r="2.4"/><circle class="n light" cx="74" cy="50" r="2.4"/>' +
+        '<path d="M8 22L-4 16V40L8 46Z" fill="url(#tw-hd)"/></g>',
+    },
+    moeda: {
+      w: 22, h: 22,
+      svg: '<circle class="g" cx="11" cy="11" r="9.5"/><circle class="n gs" cx="11" cy="11" r="6"/>' +
+        '<text class="tw-t" x="11" y="13.6" style="font-size:6px">R$</text>',
+    },
+    original: {
+      w: 112, h: 68,
+      svg:
+        guy(0, 22, 1, 'class="k"', face(2, 1, 20) + shades) +
+        guy(86, 22, 1, 'class="k"', face(2, 1, 20) + shades) +
+        guy(38, 6, 1.35, 'class="g"', face(2, 1, 20) + shades +
+          '<path class="g" d="M4 0L6 -7L9.5 -3L12 -9L14.5 -3L18 -7L20 0Z"/>',
+          '<path class="r" d="M12 22.5l-1.6 2 1.6 7 1.6-7z"/>'),
+    },
+  };
+
   // Elementos das obras da República.
   const OBRA = {
     lamp:
@@ -563,6 +674,7 @@
     pat('tw-gold', 4, 4, 45, 'pgold', '<line x1="0" y1="0" x2="0" y2="4" class="pl pgl"/>') +
     pat('tw-glass', 6, 8, 0, 'pglass', '<path d="M0 0H6M0 0V8" class="pl"/><path d="M1 6L4 2" class="pl pv"/>') +
     pat('tw-metal', 3, 3, 0, 'pmetal', '<line x1="0" y1="1.5" x2="3" y2="1.5" class="pl"/>') +
+    pat('tw-stripe', 4, 5, 0, 'pmarble', '<rect width="4" height="2.5" class="pk"/>') +
     '<clipPath id="tw-round" clipPathUnits="objectBoundingBox"><circle cx=".5" cy=".5" r=".5"/></clipPath>' +
     '</defs></svg>';
 
@@ -578,6 +690,7 @@
 
   RC.TOWN_ART = ART;
   RC.TOWN_OBRA = OBRA;
+  RC.TOWN_EVENT = EVENT_ART;
   RC.TOWN_DEFS = DEFS;
   RC.TOWN_SUN = SUN;
   RC.TOWN_MOON = MOON;

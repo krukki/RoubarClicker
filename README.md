@@ -18,6 +18,12 @@ o progresso sozinho.
   o quê). As melhorias de clique, imposto, decreto e Roubar Dourado ganham
   lotes próprios, e as Obras da República mudam a cidade inteira.
 - Fique de olho: às vezes o Roubar Dourado se esconde entre os prédios.
+- De tempos em tempos acontece algo na cidade (um ladrão fugindo, um disco
+  voador, um desfile, um carro-forte tombado). Toque para ganhar um prêmio.
+  O ladrão é o único que leva um pouco do seu dinheiro se você deixar fugir.
+- Em Renascer fica a Loja de Ouro: gaste Roubars de Ouro em monumentos que dão
+  bônus permanentes e ficam no Memorial da cidade mesmo depois de renascer.
+- Os botões redondos acima da cidade pulam direto para cada lote.
 - Quando juntar R$ 1 bilhão no total, você pode renascer: recomeça do zero,
   mas com um bônus permanente de produção.
 

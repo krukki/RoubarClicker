@@ -438,6 +438,7 @@ body.finger .coin { box-shadow: 0 9px 0 #7a4f0c, 0 0 0 6px rgba(253, 238, 180, 0
   .ticker:hover { background: #c5dace; }
   .building.can:hover { background: rgba(253, 238, 180, 0.6); }
   .upgrade.can:hover { background: var(--gold-hi); }
+  .town-nav button:hover { background: var(--gold-hi); }
 }
 
 /* ---------- Roubar Dourado ---------- */
@@ -1340,6 +1341,130 @@ body.frenzy .town .a-leg, body.frenzy .town .a-bob { animation-duration: 0.18s; 
   .plot:hover .unit { filter: drop-shadow(0 0 4px rgba(227, 178, 60, 0.9)); }
 }
 
+/* ---------- Atalhos dos lotes ---------- */
+.town-nav {
+  display: flex;
+  gap: 6px;
+  padding: 6px 12px;
+  overflow-x: auto;
+  border-top: 1px solid var(--line);
+  background: var(--paper-lo);
+  scrollbar-width: none;
+}
+
+.town-nav::-webkit-scrollbar { display: none; }
+.town-nav + .town { border-top-width: 1px; border-top-style: solid; }
+
+.town-nav button {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid var(--ink);
+  border-radius: 50%;
+  font-size: 1.05rem;
+  line-height: 1;
+  background: var(--paper-hi);
+}
+
+/* ---------- Acontecimentos da cidade ---------- */
+.town-events { position: absolute; inset: 0; pointer-events: none; }
+
+.ev {
+  position: absolute;
+  z-index: 36;
+  padding: 0;
+  border: 0;
+  background: none;
+  pointer-events: auto;
+}
+
+button.ev { cursor: pointer; }
+button.ev:disabled { cursor: default; }
+
+.ev .ev-art {
+  display: block;
+  overflow: visible;
+  stroke: var(--tw-ink);
+  stroke-width: 1.2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  fill: var(--tw-wall);
+}
+
+.ev-run { bottom: 4px; animation: tw-cross var(--t) linear forwards; }
+.ev-run .ev-art { transform: scale(1.25); transform-origin: 50% 100%; }
+.ev-run .ev-bang { top: -32px; }
+.ev-ladrao .a-leg, .ev-ladrao .a-bob { animation-duration: 0.2s; }
+.ev-sky { top: 6px; }
+.ev-ovni { animation: tw-float 1.8s ease-in-out infinite alternate; }
+.ev-chuva { animation: tw-drift 5s ease-in-out infinite alternate; }
+.ev-chuva .rain { display: none; }
+.ev-chuva.raining .rain { display: inline; }
+.ev-chuva.raining .ev-bang { display: none; }
+.ev-ground { bottom: 2px; }
+.ev-carro { bottom: 0; pointer-events: none; }
+.ev-moeda { filter: drop-shadow(0 0 5px rgba(253, 224, 120, 0.95)); animation: tw-coinbob 0.55s ease-in-out var(--d) infinite alternate; }
+.ev-moeda .ev-bang { display: none; }
+
+.ev-bang {
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  width: 18px;
+  height: 18px;
+  margin-left: -9px;
+  border-radius: 50%;
+  font: 800 0.8rem/18px var(--body);
+  text-align: center;
+  color: #fff;
+  background: var(--red);
+  animation: tw-bang 0.45s ease-in-out infinite alternate;
+}
+
+.ev-sky .ev-bang { top: 34px; left: 86%; }
+
+.town svg .beam { fill: var(--gold-hi); opacity: 0.5; stroke: none; }
+.town svg .beam.night { display: none; }
+.town[data-phase='night'] svg .beam.night { display: inline; }
+.town svg .saucer { fill: url(#tw-metal); }
+.town svg .bag { fill: var(--tw-wood); }
+.town svg .eye { fill: #fff; stroke: none; }
+.town svg .drum { fill: #fff; }
+.town svg .plat { fill: #eef2f5; }
+.town svg .jetg { stroke: var(--gold); stroke-dasharray: 3 3; }
+.town svg .clover.big { stroke-width: 1.1; }
+.town .pk { fill: var(--tw-ink); stroke: none; }
+.town .a-abduct { animation: tw-abduct 2.2s ease-in-out infinite alternate; }
+.town .a-rain { stroke: var(--tw-water); stroke-dasharray: 5 6; animation: tw-dash 0.35s linear infinite; }
+
+@keyframes tw-cross { from { transform: none; } to { transform: translateX(var(--dist)); } }
+@keyframes tw-drift { from { transform: translateX(-12px); } to { transform: translateX(12px); } }
+@keyframes tw-abduct { from { transform: none; } to { transform: translateY(-22px); } }
+@keyframes tw-coinbob { from { transform: none; } to { transform: translateY(-5px); } }
+@keyframes tw-bang { from { transform: none; } to { transform: translateY(-4px) scale(1.15); } }
+
+/* ---------- Loja de Ouro ---------- */
+.perks { display: grid; gap: 8px; }
+
+.perk {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 12px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+}
+
+.perk div { display: grid; flex: 1 1 180px; }
+.perk strong { line-height: 1.25; }
+.perk div span { font-size: 0.84rem; color: var(--ink-2); }
+.perk div .u-look { color: var(--teal); }
+.perk button { flex: none; margin-left: auto; white-space: nowrap; }
+.perk.got { border-color: var(--ink); background: #fff; }
+.perk.got .m-icon { background: radial-gradient(circle at 35% 28%, var(--gold-hi), var(--gold)); }
+
 /* ---------- Telas largas ---------- */
 @media (min-width: 900px) {
   body {
@@ -1380,8 +1505,8 @@ body.frenzy .town .a-leg, body.frenzy .town .a-bob { animation-duration: 0.18s; 
   main {
     display: grid;
     grid-template-columns: minmax(0, 1fr) clamp(400px, 36vw, 520px);
-    grid-template-rows: auto minmax(0, 1fr) auto;
-    grid-template-areas: 'counter store' 'stage store' 'town store';
+    grid-template-rows: auto minmax(0, 1fr) auto auto;
+    grid-template-areas: 'counter store' 'stage store' 'nav store' 'town store';
     min-height: 0;
   }
 
@@ -1403,6 +1528,7 @@ body.frenzy .town .a-leg, body.frenzy .town .a-bob { animation-duration: 0.18s; 
     width: clamp(130px, min(calc(100cqh - 88px), 62cqw), 380px);
     margin-bottom: 14px;
   }
+  .town-nav { grid-area: nav; padding: 6px 16px; }
   .town { grid-area: town; height: clamp(200px, 31dvh, 320px); }
 
   .store {

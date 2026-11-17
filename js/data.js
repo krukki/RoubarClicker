@@ -342,6 +342,14 @@
   ach('trinca', 'Trinca', 'Receba os três bônus do Roubar Dourado.', '🎰', { type: 'special' }, true);
   ach('escondido', 'Esconde-esconde', 'Ache um Roubar Dourado escondido na cidade.', '🙈', { type: 'special' }, true);
 
+  ach('xerife', 'Xerife', 'Pegue um ladrão na cidade.', '🤠', { type: 'special' });
+  ach('contato', 'Contato imediato', 'Espante um disco voador.', '🛸', { type: 'special' });
+  ach('eventos-1', 'Cidadão atento', 'Resolva 10 acontecimentos da cidade.', '👀', { type: 'events', n: 10 });
+  ach('eventos-2', 'Herói da República', 'Resolva 50 acontecimentos da cidade.', '🦸', { type: 'events', n: 50 });
+  ach('autografo', 'Autógrafo', 'Encontre o Roubar original passeando pela cidade.', '🕶️', { type: 'special' }, true);
+  ach('monumento-1', 'Pedra fundamental', 'Erga o primeiro monumento do Memorial.', '🏛️', { type: 'perks', n: 1 });
+  ach('monumento-2', 'Memorial completo', 'Erga todos os monumentos do Memorial.', '🏛️', { type: 'perks', n: 8 });
+
   /* ---------- Notícias ---------- */
   // req (opcional): mesma forma das condições acima.
   const NEWS = [
@@ -379,14 +387,73 @@
     { text: 'Museu Nacional inaugura ala de conquistas. A fila dá a volta no quarteirão.', req: { type: 'achievements', n: 10 } },
     { text: 'Clones do Roubar são vistos passeando pela cidade. Ninguém sabe para onde eles vão.', req: { type: 'building', building: 'clone', n: 3 } },
     { text: 'Moradores relatam um rosto dourado espiando entre os prédios. A prefeitura pede calma.', req: { type: 'golden', n: 3 } },
+    { text: 'Onda de furtos de sacolas de dinheiro preocupa a República. Polícia pede que a população clique nos suspeitos.', req: { type: 'totalBuildings', n: 5 } },
+    { text: 'Disco voador é visto sobre a cidade. Clones negam ter pedido carona.', req: { type: 'building', building: 'clone', n: 5 } },
+    { text: 'Memorial da República recebe mais visitantes que o Cristo Redentor, segundo o próprio Memorial.', req: { type: 'perks', n: 1 } },
+    { text: 'Roubar original é visto de óculos escuros no centro. Ele nega ser ele.', req: { type: 'events', n: 3 } },
   ];
 
   /* ---------- Efeitos do Roubar Dourado ---------- */
+  /* ---------- Loja de Ouro: melhorias permanentes (monumentos) ---------- */
+  // Compradas com Roubars de Ouro. Ficam para sempre, mesmo depois de renascer.
+  const PERKS = [
+    { id: 'heranca', name: 'Herança', icon: '🧰', cost: 1,
+      desc: 'Ganhe R$ 10 mil agora e no começo de cada partida.',
+      look: 'um baú de tesouro aparece no Memorial.' },
+    { id: 'estimacao', name: 'Dedos de estimação', icon: '👆', cost: 3,
+      desc: 'Ganhe 10 Dedos Nervosos e 5 Clones agora e no começo de cada partida.',
+      look: 'uma estátua do Dedo sobe no Memorial.' },
+    { id: 'chafariz', name: 'Chafariz de ouro', icon: '⛲', cost: 5,
+      desc: 'Toda a produção rende 10% a mais, para sempre.',
+      look: 'um chafariz dourado jorra no Memorial.' },
+    { id: 'platina', name: 'Dedo de platina', icon: '🤍', cost: 10,
+      desc: 'Cada clique rende o dobro, para sempre.',
+      look: 'uma mão de platina brilha no Memorial.' },
+    { id: 'farol', name: 'Farol da madrugada', icon: '🗼', cost: 15,
+      desc: 'Com o jogo fechado, a República rende no ritmo inteiro em vez da metade.',
+      look: 'um farol é erguido no Memorial e acende à noite.' },
+    { id: 'trevo', name: 'Trevo eterno', icon: '🍀', cost: 25,
+      desc: 'O Roubar Dourado aparece 30% mais vezes, para sempre.',
+      look: 'um trevo gigante de quatro folhas cresce no Memorial.' },
+    { id: 'fundador', name: 'Desconto de fundador', icon: '🏷️', cost: 40,
+      desc: 'Todas as construções custam 10% menos, para sempre.',
+      look: 'o Arco do Fundador é inaugurado no centro do Memorial.' },
+    { id: 'obelisco', name: 'Obelisco das Eras', icon: '🗿', cost: 75,
+      desc: 'Toda a produção rende 2% a mais para cada vez que você renasceu (até +100%).',
+      look: 'um obelisco com ponta de ouro coroa o Memorial.' },
+  ];
+
+  /* ---------- Acontecimentos da cidade ---------- */
+  // weight: chance relativa | needs: construção necessária | seconds: valor do
+  // prêmio em segundos de produção | buff: bônus temporário.
+  const EVENTS = [
+    { id: 'ladrao', name: 'Ladrão!', weight: 30, seconds: 180, floor: 15, lossSeconds: 60, lossShare: 0.02,
+      label: 'Ladrão fugindo com uma sacola de dinheiro. Clique para pegar.',
+      win: 'Sacola recuperada', lose: 'O ladrão fugiu' },
+    { id: 'ovni', name: 'Disco voador', weight: 20, needs: 'clone',
+      buff: { kind: 'cps', name: 'Clones gratos', desc: 'Produção x2', mult: 2, seconds: 30 },
+      label: 'Disco voador levando um clone. Clique para espantar.',
+      win: 'Disco voador espantado' },
+    { id: 'desfile', name: 'Desfile cívico', weight: 20,
+      buff: { kind: 'click', name: 'Torcida', desc: 'Clique x5', mult: 5, seconds: 20 },
+      label: 'Desfile cívico passando pela rua. Clique para aplaudir.',
+      win: 'A banda agradece' },
+    { id: 'chuva', name: 'Nuvem de chuva', weight: 20, needs: 'fazenda', seconds: 120, floor: 10,
+      label: 'Nuvem carregada sobre a cidade. Clique para fazer chover nas fazendas.',
+      win: 'Choveu na plantação' },
+    { id: 'carro', name: 'Carro-forte tombado', weight: 15, seconds: 30, floor: 5, parts: 5,
+      label: 'Moeda caída do carro-forte. Clique para recolher.',
+      win: 'Moeda recolhida' },
+    { id: 'original', name: 'O Roubar original', weight: 4, seconds: 900, floor: 100,
+      label: 'O Roubar original passeando com seguranças. Clique para pedir um autógrafo.',
+      win: 'Autógrafo do Roubar original' },
+  ];
+
   const GOLDEN = {
     frenzy: { name: 'Frenesi', desc: 'Produção x7', mult: 7, seconds: 60, chance: 0.48 },
     lucky: { name: 'Sortudo', chance: 0.42 },
     finger: { name: 'Dedo de Ouro', desc: 'Clique x777', mult: 777, seconds: 13, chance: 0.10 },
   };
 
-  RC.DATA = { BUILDINGS, UPGRADES, ACHIEVEMENTS, NEWS, GOLDEN, TIER_COUNTS };
+  RC.DATA = { BUILDINGS, UPGRADES, ACHIEVEMENTS, NEWS, GOLDEN, PERKS, EVENTS, TIER_COUNTS };
 })(typeof window !== 'undefined' ? window : globalThis);

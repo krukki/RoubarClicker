@@ -5,14 +5,18 @@
 (function (root) {
   'use strict';
   const RC = (root.RC = root.RC || {});
-  const { BUILDINGS, UPGRADES, ACHIEVEMENTS, GOLDEN } = RC.DATA;
+  const { BUILDINGS, UPGRADES, ACHIEVEMENTS, GOLDEN, PERKS, EVENTS } = RC.DATA;
 
   const SAVE_VERSION = 1;
   const COST_GROWTH = 1.15;
   const ACH_BONUS = 0.01; // +1% de produção por conquista
   const GOLD_BONUS = 0.02; // +2% de produção por Roubar de Ouro
   const GOLD_UNIT = 1e9; // dinheiro total para o primeiro Roubar de Ouro
-  const OFFLINE_RATE = 0.5;
+  const OFFLINE_RATE = 0.5; // com o Farol da madrugada vira 1
+  const EVENT_MIN = 45; // segundos entre acontecimentos da cidade
+  const EVENT_RANGE = 55;
+  const EVENT_STAY = 14;
+  const EVENT_RETRY = 5; // se a cidade não está à vista, tenta de novo depois
   const OFFLINE_CAP = 8 * 3600; // segundos
   const OFFLINE_MIN = 60; // segundos fora para contar como offline
   const GAP_AS_OFFLINE = 300; // um salto maior que isso num tick vira offline
@@ -25,6 +29,10 @@
   BUILDINGS.forEach((b) => (BY_ID[b.id] = b));
   const UP_BY_ID = {};
   UPGRADES.forEach((u) => (UP_BY_ID[u.id] = u));
+  const PERK_BY_ID = {};
+  PERKS.forEach((p) => (PERK_BY_ID[p.id] = p));
+  const EVENT_BY_ID = {};
+  EVENTS.forEach((e) => (EVENT_BY_ID[e.id] = e));
   const ACH_BY_ID = {};
   ACHIEVEMENTS.forEach((a) => (ACH_BY_ID[a.id] = a));
 
@@ -113,6 +121,9 @@
       achievements: [],
       golden: 0, // Roubars Dourados clicados
       goldenKinds: [], // bônus já recebidos
+      perks: [], // monumentos comprados na Loja de Ouro (ficam ao renascer)
+      goldSpent: 0, // Roubars de Ouro gastos na loja
+      events: 0, // acontecimentos da cidade resolvidos
       gold: 0, // Roubars de Ouro (prestígio)
       ascensions: 0,
       playtime: 0, // segundos
@@ -129,6 +140,8 @@
       this.now = opts.now || (() => Date.now());
       this.random = opts.random || Math.random;
       this.listeners = {};
+      // A tela diz se a cidade está à vista; só então começam acontecimentos.
+      this.eventGate = opts.eventGate || (() => true);
       this.reset();
     }
 
@@ -147,11 +160,13 @@
       this.s = defaultState(now);
       this.buffs = [];
       this.goldenSpawn = null;
+      this.townEvent = null;
       this.clickTimes = [];
       this.lastTick = now;
       this.achTimer = 0;
       this.recompute();
       this.scheduleGolden();
+      this.scheduleEvent();
     }
 
     has(upgradeId) {
@@ -190,6 +205,15 @@
 
       global *= 1 + ACH_BONUS * s.achievements.length;
       global *= 1 + GOLD_BONUS * s.gold;
+
+      // Monumentos da Loja de Ouro.
+      const perk = (id) => s.perks.indexOf(id) !== -1;
+      if (perk('chafariz')) global *= 1.1;
+      if (perk('obelisco')) global *= 1 + Math.min(1, 0.02 * s.ascensions);
+      if (perk('platina')) clickMult *= 2;
+      if (perk('trevo')) this.goldenFreq /= 1.3;
+      this.costMult = perk('fundador') ? 0.9 : 1;
+      this.offlineRate = perk('farol') ? 1 : OFFLINE_RATE;
 
       let cpsBuff = 1;
       let clickBuff = 1;
@@ -238,7 +262,7 @@
       amount = amount || 1;
       const b = BY_ID[id];
       const owned = this.s.buildings[id];
-      const total = b.baseCost * Math.pow(COST_GROWTH, owned) * (Math.pow(COST_GROWTH, amount) - 1) / (COST_GROWTH - 1);
+      const total = this.costMult * b.baseCost * Math.pow(COST_GROWTH, owned) * (Math.pow(COST_GROWTH, amount) - 1) / (COST_GROWTH - 1);
       return Math.ceil(total - 1e-9);
     }
 
@@ -280,6 +304,8 @@
         case 'playtime': return s.playtime >= req.n;
         case 'totalBuildings': return this.totalBuildings() >= req.n;
         case 'eachBuilding': return BUILDINGS.every((b) => s.buildings[b.id] >= req.n);
+        case 'events': return s.events >= req.n;
+        case 'perks': return s.perks.length >= req.n;
         default: return false;
       }
     }
@@ -333,8 +359,8 @@
       this.nextGoldenAt = this.now() + wait * 1000;
     }
 
-    addBuff(id, kind, def) {
-      const seconds = def.seconds * this.goldenBuff;
+    addBuff(id, kind, def, scale) {
+      const seconds = def.seconds * (scale == null ? this.goldenBuff : scale);
       this.buffs = this.buffs.filter((b) => b.id !== id);
       this.buffs.push({ id, kind, name: def.name, desc: def.desc, mult: def.mult, seconds, until: this.now() + seconds * 1000 });
       this.recompute();
@@ -384,6 +410,116 @@
       return Math.max(0, this.goldFor(this.s.earnedAll) - this.s.gold);
     }
 
+    /* ----- Loja de Ouro ----- */
+    // O bônus de +2% conta todo o ouro já ganho; a loja gasta de um saldo à parte.
+    goldAvailable() {
+      return this.s.gold - this.s.goldSpent;
+    }
+
+    hasPerk(id) {
+      return this.s.perks.indexOf(id) !== -1;
+    }
+
+    // Presentes de começo de partida (valem na compra e a cada renascimento).
+    applyStartPerks(only) {
+      const s = this.s;
+      if (this.hasPerk('heranca') && (!only || only === 'heranca')) s.money += 10000;
+      if (this.hasPerk('estimacao') && (!only || only === 'estimacao')) {
+        s.buildings.dedo += 10;
+        s.buildings.clone += 5;
+      }
+    }
+
+    buyPerk(id) {
+      const p = PERK_BY_ID[id];
+      if (!p || this.hasPerk(id) || this.goldAvailable() < p.cost) return false;
+      this.s.perks.push(id);
+      this.s.goldSpent += p.cost;
+      this.applyStartPerks(id);
+      this.recompute();
+      this.checkAchievements();
+      this.emit('change');
+      return true;
+    }
+
+    /* ----- acontecimentos da cidade ----- */
+    scheduleEvent() {
+      this.nextEventAt = this.now() + (EVENT_MIN + this.random() * EVENT_RANGE) * 1000;
+    }
+
+    // Prêmio em dinheiro: alguns segundos de produção, com um mínimo.
+    eventPrize(def) {
+      return this.baseCps * def.seconds + def.floor;
+    }
+
+    startEvent(type) {
+      const def = EVENT_BY_ID[type];
+      if (!def) return null;
+      this.townEvent = { type, left: def.parts || 1, caught: 0, until: this.now() + EVENT_STAY * 1000 };
+      this.emit('eventStart', this.townEvent);
+      return this.townEvent;
+    }
+
+    pickEvent() {
+      const pool = EVENTS.filter((e) => !e.needs || this.s.buildings[e.needs] > 0);
+      let total = 0;
+      pool.forEach((e) => (total += e.weight));
+      let roll = this.random() * total;
+      for (let i = 0; i < pool.length; i++) {
+        roll -= pool[i].weight;
+        if (roll < 0) return pool[i].id;
+      }
+      return pool[pool.length - 1].id;
+    }
+
+    // O jogador clicou no acontecimento (ou em uma das moedas do carro-forte).
+    resolveEvent() {
+      const ev = this.townEvent;
+      if (!ev) return null;
+      const def = EVENT_BY_ID[ev.type];
+      const s = this.s;
+      const result = { type: ev.type, name: def.name, title: def.win };
+      if (def.buff) {
+        this.addBuff('ev-' + ev.type, def.buff.kind, def.buff, 1);
+        result.text = def.buff.desc + ' por ' + fmtTime(def.buff.seconds);
+      } else {
+        const gain = this.eventPrize(def);
+        this.earn(gain);
+        result.gain = gain;
+        result.text = '+' + money(gain);
+      }
+      if (ev.caught === 0) s.events++;
+      ev.caught++;
+      ev.left--;
+      result.done = ev.left <= 0;
+      if (ev.type === 'ladrao') this.grant('xerife');
+      if (ev.type === 'ovni') this.grant('contato');
+      if (ev.type === 'original') this.grant('autografo');
+      if (result.done) {
+        this.townEvent = null;
+        this.scheduleEvent();
+      }
+      this.checkAchievements();
+      this.emit('eventEnd', result);
+      this.emit('change');
+      return result;
+    }
+
+    // O tempo acabou sem o jogador resolver. Só o ladrão leva alguma coisa.
+    expireEvent(silent) {
+      const ev = this.townEvent;
+      if (!ev) return;
+      const def = EVENT_BY_ID[ev.type];
+      this.townEvent = null;
+      this.scheduleEvent();
+      let loss = 0;
+      if (!silent && def.lossSeconds && ev.caught === 0) {
+        loss = Math.min(this.baseCps * def.lossSeconds, this.s.money * def.lossShare);
+        this.s.money -= loss;
+      }
+      this.emit('eventGone', { type: ev.type, title: def.lose, loss, missed: !silent && ev.caught === 0 });
+    }
+
     // Quanto falta ganhar para o próximo Roubar de Ouro.
     nextGoldAt() {
       const next = Math.max(this.goldFor(this.s.earnedAll), this.s.gold) + 1;
@@ -404,6 +540,8 @@
       s.runStartedAt = now;
       this.buffs = [];
       this.goldenSpawn = null;
+      this.expireEvent(true);
+      this.applyStartPerks();
       this.recompute();
       this.scheduleGolden();
       this.checkAchievements();
@@ -415,11 +553,11 @@
     /* ----- tempo ----- */
     applyOffline(seconds) {
       const counted = Math.min(seconds, OFFLINE_CAP);
-      const gain = this.baseCps * counted * OFFLINE_RATE;
+      const gain = this.baseCps * counted * this.offlineRate;
       if (seconds >= OFFLINE_CAP) this.grant('bom-filho');
       if (gain > 0) {
         this.earn(gain);
-        this.emit('offline', { seconds, counted, gain, capped: seconds > OFFLINE_CAP });
+        this.emit('offline', { seconds, counted, gain, capped: seconds > OFFLINE_CAP, full: this.offlineRate >= 1 });
       }
       return gain;
     }
@@ -439,6 +577,7 @@
         this.goldenSpawn = null;
         this.scheduleGolden();
         this.emit('goldenGone', { missed: false });
+        this.expireEvent(true);
         this.checkAchievements();
         return;
       }
@@ -470,6 +609,13 @@
         this.scheduleGolden();
         this.grant('deixou-passar');
         this.emit('goldenGone', { missed: true });
+      }
+
+      if (this.townEvent) {
+        if (now >= this.townEvent.until) this.expireEvent(false);
+      } else if (now >= this.nextEventAt) {
+        if (this.totalBuildings() > 0 && this.eventGate()) this.startEvent(this.pickEvent());
+        else this.nextEventAt = now + EVENT_RETRY * 1000;
       }
 
       this.achTimer += dt;
@@ -513,6 +659,11 @@
       s.upgrades = uniq(data.upgrades, UP_BY_ID);
       s.achievements = uniq(data.achievements, ACH_BY_ID);
       s.goldenKinds = uniq(data.goldenKinds, GOLDEN);
+      s.perks = uniq(data.perks, PERK_BY_ID);
+      s.goldSpent = 0;
+      s.perks.forEach((id) => (s.goldSpent += PERK_BY_ID[id].cost));
+      s.gold = Math.max(s.gold, s.goldSpent);
+      s.events = Math.floor(num(data.events, 0));
       if (data.settings && typeof data.settings === 'object') {
         s.settings.sound = data.settings.sound !== false;
         s.settings.fx = data.settings.fx !== false;
@@ -522,10 +673,12 @@
       this.s = s;
       this.buffs = [];
       this.goldenSpawn = null;
+      this.townEvent = null;
       this.clickTimes = [];
       this.lastTick = now;
       this.recompute();
       this.scheduleGolden();
+      this.scheduleEvent();
 
       const away = (now - s.lastSaved) / 1000;
       if (away >= OFFLINE_MIN) this.applyOffline(away);

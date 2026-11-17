@@ -12,11 +12,16 @@
   const RC = (root.RC = root.RC || {});
   const ART = RC.TOWN_ART;
   const OBRA = RC.TOWN_OBRA;
-  const { BUILDINGS, UPGRADES } = RC.DATA;
+  const EVENT_ART = RC.TOWN_EVENT;
+  const { BUILDINGS, UPGRADES, PERKS, EVENTS } = RC.DATA;
   const BY_ID = {};
   BUILDINGS.forEach((b) => (BY_ID[b.id] = b));
+  // Melhorias e monumentos: tudo o que muda um lote.
   const UP_BY_ID = {};
   UPGRADES.forEach((u) => (UP_BY_ID[u.id] = u));
+  PERKS.forEach((p) => (UP_BY_ID[p.id] = p));
+  const EVENT_BY_ID = {};
+  EVENTS.forEach((e) => (EVENT_BY_ID[e.id] = e));
 
   const CAP = 5; // desenhos por lote
   const CLONE_CAP = 12;
@@ -31,12 +36,13 @@
 
   const range = (prefix, n) => Array.from({ length: n }, (_, i) => prefix + '-' + (i + 1));
 
-  // Lotes cívicos: aparecem com a primeira melhoria do grupo.
+  // Lotes cívicos: aparecem com a primeira melhoria (ou monumento) do grupo.
   const CIVIC = {
-    praca: { name: 'Praça do Clique', desc: 'Cada melhoria de clique muda a praça.', ups: range('clique', 5) },
-    palacio: { name: 'Palácio da República', desc: 'Cada decreto muda o palácio. O Feriado enfeita a cidade inteira.', ups: range('decreto', 6) },
-    receita: { name: 'Receita do Roubar', desc: 'Cada imposto sobre o clique muda a Receita.', ups: range('fatia', 5) },
-    fonte: { name: 'Fonte da Sorte', desc: 'Cada melhoria do Roubar Dourado muda a fonte.', ups: range('dourado', 3) },
+    memorial: { name: 'Memorial da República', icon: '🏛️', desc: 'Os monumentos vêm da Loja de Ouro (em Renascer) e ficam para sempre.', ups: PERKS.map((p) => p.id) },
+    praca: { name: 'Praça do Clique', icon: '🖱️', desc: 'Cada melhoria de clique muda a praça.', ups: range('clique', 5) },
+    palacio: { name: 'Palácio da República', icon: '📜', desc: 'Cada decreto muda o palácio. O Feriado enfeita a cidade inteira.', ups: range('decreto', 6) },
+    receita: { name: 'Receita do Roubar', icon: '🧾', desc: 'Cada imposto sobre o clique muda a Receita.', ups: range('fatia', 5) },
+    fonte: { name: 'Fonte da Sorte', icon: '🍀', desc: 'Cada melhoria do Roubar Dourado muda a fonte.', ups: range('dourado', 3) },
   };
   const PLOT_IDS = Object.keys(CIVIC).concat(BUILDINGS.map((b) => b.id).filter((id) => id !== 'multiverso'));
   const OBRAS = UPGRADES.filter((u) => u.id.indexOf('obra-') === 0).map((u) => u.id);
@@ -173,6 +179,7 @@
         '<div class="town-deco" aria-hidden="true"></div>' +
         '<div class="town-plots"></div>' +
         '<div class="town-clones"><div class="bus" aria-hidden="true">' + OBRA.bus + '</div></div>' +
+        '<div class="town-events"></div>' +
         '</div></div>' +
         '<div class="town-empty"><strong>Terreno da República</strong><span>Compre construções para povoar.</span></div>' +
         '<div class="town-card" aria-live="polite" hidden></div>';
@@ -184,6 +191,12 @@
       this.clonesBox = rootEl.querySelector('.town-clones');
       this.planetsBox = rootEl.querySelector('.town-planets');
       this.bus = rootEl.querySelector('.bus');
+      this.eventsBox = rootEl.querySelector('.town-events');
+      this.eventNodes = [];
+      this.nav = document.getElementById('town-nav');
+      this.navSig = null;
+      // Acontecimentos só começam com a cidade à vista e sem janela aberta.
+      game.eventGate = () => this.visible && !document.hidden && !document.querySelector('dialog[open]');
       this.card = rootEl.querySelector('.town-card');
 
       this.planetBtn = el('button', 'sr-only');
@@ -279,10 +292,10 @@
     render(force) {
       if (!this.root) return;
       const s = this.game.s;
-      const sig = BUILDINGS.map((b) => s.buildings[b.id]).join(',') + '|' + s.upgrades.join(',');
+      const sig = BUILDINGS.map((b) => s.buildings[b.id]).join(',') + '|' + s.upgrades.join(',') + '|' + s.perks.join(',');
       if (!force && sig === this.sig) return;
       this.sig = sig;
-      const owned = new Set(s.upgrades);
+      const owned = new Set(s.upgrades.concat(s.perks));
 
       if (force) {
         Object.keys(this.plots).forEach((id) => this.plots[id].el.remove());
@@ -294,7 +307,7 @@
         this.hideCard();
       }
 
-      const L = (this.L = layout(s.buildings, s.upgrades));
+      const L = (this.L = layout(s.buildings, Array.from(owned)));
       this.world.style.width = L.width + 'px';
       const seen = {};
       L.plots.forEach((plot) => {
@@ -312,6 +325,7 @@
       this.syncClones(L.clones, W, owned);
       this.syncPlanets(L.planets, W, owned);
       this.syncCity(L, W, owned);
+      this.syncNav(L);
       this.root.classList.toggle('is-empty', L.plots.length + L.clones + L.planets === 0);
     },
 
@@ -428,6 +442,106 @@
       }
       this.bus.style.setProperty('--dist', W + 90 + 'px');
       this.bus.style.setProperty('--t', Math.max(12, (W + 90) / 70).toFixed(0) + 's');
+    },
+
+    // Atalhos: um botão redondo por lote, para pular direto até ele.
+    syncNav(L) {
+      if (!this.nav) return;
+      const sig = L.plots.map((p) => p.id).join(',');
+      if (sig === this.navSig) return;
+      this.navSig = sig;
+      this.nav.textContent = '';
+      this.nav.hidden = L.plots.length < 2;
+      L.plots.forEach((p) => {
+        const info = CIVIC[p.id] || BY_ID[p.id];
+        const btn = el('button', null, info.icon);
+        btn.type = 'button';
+        btn.title = info.name;
+        btn.setAttribute('aria-label', 'Ir para ' + info.name);
+        btn.addEventListener('click', () => {
+          this.scrollToPlot(p.id);
+          if (this.plots[p.id]) this.flash(this.plots[p.id].el);
+        });
+        this.nav.appendChild(btn);
+      });
+    },
+
+    /* ----- acontecimentos ----- */
+    // Mostra o acontecimento na parte da cidade que está à vista.
+    showEvent(ev) {
+      this.hideEvent();
+      const def = EVENT_BY_ID[ev.type];
+      const art = EVENT_ART[ev.type];
+      if (!def || !art) return;
+      const viewW = Math.min(this.scroll.clientWidth, this.worldWidth());
+      const left0 = this.scroll.scrollLeft;
+      const secs = Math.max(2, (ev.until - this.game.now()) / 1000);
+      const spot = (w) => left0 + 16 + Math.random() * Math.max(0, viewW - w - 32);
+      const make = (tag, cls, a, label) => {
+        const node = el(tag, 'ev ' + cls);
+        node.innerHTML = unitHTML(a, 'ev-art', '');
+        if (tag === 'button') {
+          node.type = 'button';
+          node.setAttribute('aria-label', label);
+          const bang = el('span', 'ev-bang', '!');
+          bang.setAttribute('aria-hidden', 'true');
+          node.appendChild(bang);
+          node.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (this.dragged) return;
+            const box = node.getBoundingClientRect();
+            const result = this.game.resolveEvent();
+            if (!result) return;
+            if (!result.done) node.remove();
+            if (RC.UI && RC.UI.eventResult) RC.UI.eventResult(result, box.left + box.width / 2, box.top);
+          });
+        }
+        this.eventsBox.appendChild(node);
+        this.eventNodes.push(node);
+        return node;
+      };
+
+      if (ev.type === 'ladrao' || ev.type === 'desfile' || ev.type === 'original') {
+        // Atravessa a rua de um lado ao outro enquanto durar.
+        const node = make('button', 'ev-run ev-' + ev.type, art, def.label);
+        // Sem animação (reduzir movimento), fica parado num ponto à vista.
+        node.style.left = (reducedMotion() ? spot(art.w) : left0 - art.w) + 'px';
+        node.style.setProperty('--dist', viewW + art.w + 'px');
+        node.style.setProperty('--t', secs.toFixed(1) + 's');
+      } else if (ev.type === 'ovni') {
+        const node = make('button', 'ev-sky ev-ovni', art, def.label);
+        node.style.left = spot(art.w) + 'px';
+      } else if (ev.type === 'chuva') {
+        const node = make('button', 'ev-sky ev-chuva', art, def.label);
+        const farm = this.L.plots.find((p) => p.id === 'fazenda');
+        const over = farm ? farm.x + farm.w / 2 - art.w / 2 : -1;
+        node.style.left = (over >= left0 && over <= left0 + viewW - art.w ? over : spot(art.w)) + 'px';
+      } else if (ev.type === 'carro') {
+        const truck = make('div', 'ev-ground ev-carro', art);
+        const x = spot(art.w + 120);
+        truck.style.left = x + 40 + 'px';
+        for (let i = 0; i < ev.left; i++) {
+          const coin = make('button', 'ev-ground ev-moeda', EVENT_ART.moeda, def.label);
+          coin.style.left = x + i * 38 + Math.random() * 10 + 'px';
+          coin.style.bottom = 2 + Math.random() * 16 + 'px';
+          coin.style.setProperty('--d', (-Math.random()).toFixed(2) + 's');
+        }
+      }
+    },
+
+    // Tira o acontecimento da tela. A chuva cai por um instante antes de sumir.
+    hideEvent(result) {
+      const nodes = this.eventNodes || [];
+      this.eventNodes = [];
+      if (result && result.type === 'chuva' && !reducedMotion()) {
+        nodes.forEach((n) => {
+          n.classList.add('raining');
+          n.disabled = true;
+        });
+        setTimeout(() => nodes.forEach((n) => n.remove()), 2200);
+        return;
+      }
+      nodes.forEach((n) => n.remove());
     },
 
     pop(node) {

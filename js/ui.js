@@ -4,7 +4,7 @@
 (function (root) {
   'use strict';
   const RC = root.RC;
-  const { BUILDINGS, UPGRADES, ACHIEVEMENTS, NEWS } = RC.DATA;
+  const { BUILDINGS, UPGRADES, ACHIEVEMENTS, NEWS, PERKS } = RC.DATA;
   const { fmt, money, fmtTime, CONST } = RC;
 
   const $ = (id) => document.getElementById(id);
@@ -87,6 +87,8 @@
     golden() { [784, 988, 1175, 1568].forEach((f, i) => this.tone(f, 0.16, 'triangle', 0.08, i * 0.07)); },
     achievement() { [523, 659, 784, 1047].forEach((f, i) => this.tone(f, 0.18, 'sine', 0.08, i * 0.09)); },
     ascend() { [262, 330, 392, 523, 659, 784].forEach((f, i) => this.tone(f, 0.3, 'triangle', 0.07, i * 0.11)); },
+    alert() { this.tone(880, 0.09, 'square', 0.04); this.tone(880, 0.09, 'square', 0.04, 0.14); },
+    lose() { this.tone(330, 0.25, 'sawtooth', 0.05, 0, 110); },
   };
 
   const UI = {
@@ -462,7 +464,9 @@
         this.store.save();
         this.hideGolden();
         this.upgradeSig = null;
-        $('dlg-prestige').close();
+        // A janela fica aberta: o ouro novo já pode ser gasto na Loja de Ouro.
+        this.renderPrestige();
+        $('shop-balance').scrollIntoView({ block: 'center' });
         this.toast('Você renasceu', '+' + fmt(gain) + (gain === 1 ? ' Roubar de Ouro' : ' Roubars de Ouro'), '🔥', 'gold');
         this.dirty = true;
       });
@@ -532,6 +536,8 @@
         ['Melhorias compradas', s.upgrades.length + ' de ' + UPGRADES.length],
         ['Conquistas', s.achievements.length + ' de ' + ACHIEVEMENTS.length],
         ['Roubars Dourados clicados', fmt(s.golden)],
+        ['Acontecimentos da cidade resolvidos', fmt(s.events)],
+        ['Monumentos no Memorial', s.perks.length + ' de ' + PERKS.length],
         ['Roubars de Ouro', fmt(s.gold) + ' (+' + fmt(s.gold * CONST.GOLD_BONUS * 100) + '% de produção)'],
         ['Vezes que renasceu', fmt(s.ascensions)],
         ['Tempo de jogo', fmtTime(s.playtime)],
@@ -551,6 +557,7 @@
         ['Roubars de Ouro que você tem', fmt(s.gold) + ' (+' + fmt(s.gold * CONST.GOLD_BONUS * 100) + '% de produção)'],
         ['Você recebe se renascer agora', fmt(gain)],
       ]);
+      this.renderShop();
       $('prestige-meter').style.width = pct * 100 + '%';
       $('prestige-hint').textContent = 'Faltam ' + money(Math.max(0, next - s.earnedAll)) + ' para o próximo Roubar de Ouro.';
       const btn = $('btn-ascend');
@@ -560,6 +567,63 @@
         gain <= 0 ? 'Ainda não há Roubars de Ouro para receber'
           : btn.dataset.armed === '1' ? 'Confirmar: zerar tudo e renascer'
             : 'Renascer e receber ' + fmt(gain) + (gain === 1 ? ' Roubar de Ouro' : ' Roubars de Ouro'));
+    },
+
+    // Loja de Ouro: monumentos permanentes.
+    renderShop() {
+      const g = this.game;
+      const balance = g.goldAvailable();
+      setText($('shop-balance'), 'Saldo: ' + fmt(balance) + (balance === 1 ? ' Roubar de Ouro' : ' Roubars de Ouro'));
+      const list = $('gold-shop');
+      const sig = g.s.perks.join(',');
+      if (list.dataset.sig !== sig || !list.children.length) {
+        list.dataset.sig = sig;
+        list.textContent = '';
+        this.perkNodes = PERKS.map((p) => {
+          const got = g.hasPerk(p.id);
+          const li = el('li', 'perk' + (got ? ' got' : ''));
+          const icon = el('span', 'm-icon', p.icon);
+          icon.setAttribute('aria-hidden', 'true');
+          const body = el('div');
+          body.appendChild(el('strong', null, p.name));
+          body.appendChild(el('span', null, p.desc));
+          body.appendChild(el('span', 'u-look', 'Na cidade: ' + p.look));
+          const btn = el('button', got ? '' : 'primary');
+          btn.type = 'button';
+          btn.addEventListener('click', () => this.buyPerk(p.id));
+          li.appendChild(icon);
+          li.appendChild(body);
+          li.appendChild(btn);
+          list.appendChild(li);
+          return { p, btn, got };
+        });
+      }
+      this.perkNodes.forEach(({ p, btn, got }) => {
+        btn.disabled = got || balance < p.cost;
+        setText(btn, got ? 'Erguido' : 'Erguer por ' + p.cost);
+      });
+    },
+
+    buyPerk(id) {
+      if (!this.game.buyPerk(id)) {
+        Sound.deny();
+        return;
+      }
+      Sound.achievement();
+      this.store.save();
+      RC.Town.onUpgrade(id);
+      this.renderPrestige();
+      const p = PERKS.find((x) => x.id === id);
+      this.toast('Monumento erguido: ' + p.name, 'Veja no Memorial da cidade.', p.icon, 'gold');
+      this.dirty = true;
+    },
+
+    // Resultado de um clique num acontecimento da cidade.
+    eventResult(result, x, y) {
+      Sound.golden();
+      this.floatText(x, y, result.gain ? '+' + fmt(result.gain) : result.name + '!', 'gold');
+      if (result.done || result.type !== 'carro') this.toast(result.title, result.text, '🎯', 'gold');
+      this.dirty = true;
     },
 
     renderPrestigeBadge() {
@@ -642,6 +706,7 @@
       this.hideGolden();
       this.upgradeSig = null;
       this.syncSettings();
+      RC.Town.hideEvent();
       RC.Town.render(true);
       this.dirty = true;
     },
@@ -671,12 +736,27 @@
       });
       g.on('golden', (spawn) => this.showGolden(spawn));
       g.on('goldenGone', () => this.hideGolden());
+      g.on('eventStart', (ev) => {
+        Sound.alert();
+        RC.Town.showEvent(ev);
+      });
+      g.on('eventEnd', (result) => {
+        if (result.done) RC.Town.hideEvent(result);
+      });
+      g.on('eventGone', (gone) => {
+        RC.Town.hideEvent();
+        if (gone.loss > 0) {
+          Sound.lose();
+          this.toast(gone.title, 'Ele levou ' + money(gone.loss) + '.', '🦹', 'warn');
+        }
+      });
       g.on('offline', (o) => this.showOffline(o));
     },
 
     showOffline(o) {
       $('offline-text').textContent =
-        'Você ficou ' + fmtTime(o.seconds) + ' fora. A República continuou trabalhando pela metade do ritmo' +
+        'Você ficou ' + fmtTime(o.seconds) + ' fora. A República continuou trabalhando ' +
+        (o.full ? 'no ritmo inteiro, graças ao Farol da madrugada' : 'pela metade do ritmo') +
         (o.capped ? ' (contam só as primeiras 8 horas).' : '.');
       $('offline-gain').textContent = '+' + money(o.gain);
       const dlg = $('dlg-offline');

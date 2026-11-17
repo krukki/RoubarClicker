@@ -61,10 +61,12 @@ test('as melhorias cívicas mudam o lote delas e as obras mudam a cidade', () =>
   assert.equal(plotOf('fazenda-4'), 'fazenda');
   assert.equal(plotOf('dedo-7'), 'dedo');
   assert.equal(plotOf('obra-5'), null);
+  assert.equal(plotOf('farol'), 'memorial');
+  assert.equal(layout({}, ['heranca']).plots[0].id, 'memorial', 'o Memorial aparece com o primeiro monumento');
   Object.keys(CIVIC).forEach((id) => {
     const tiers = tiersIn(RC.TOWN_ART[id].svg);
     CIVIC[id].ups.forEach((uid, i) => {
-      assert.ok(UPGRADES.some((u) => u.id === uid), uid + ' existe');
+      assert.ok(UPGRADES.concat(RC.DATA.PERKS).some((u) => u.id === uid), uid + ' existe');
       if (id !== 'palacio' || i !== 2) assert.ok(tiers.has(i + 1) || i === 0, uid + ' tem peça no desenho');
     });
   });

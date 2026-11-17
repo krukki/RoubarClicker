@@ -2,7 +2,7 @@
  * Faz o jogo abrir sem internet. Sempre tenta a rede primeiro (para pegar
  * atualizações) e usa a cópia guardada só quando a rede falha.
  */
-const CACHE = 'roubar-clicker-v3';
+const CACHE = 'roubar-clicker-v4';
 const FILES = [
   './',
   'index.html',
